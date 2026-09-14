@@ -108,9 +108,14 @@ internal object GetMoreExtendedDataExtensionFingerprint : Fingerprint(
     name = "getMoreExtendedData",
 )
 
+/**
+ * The field read, not the comparison. piko points this at getPostType, whose first string is the
+ * literal "clips" the result is then compared against — so the field name overwrote it and no post
+ * ever matched, which is the "for some reason clips are not recognised" TODO in the extension.
+ */
 internal object GetPostTypeExtensionFingerprint : Fingerprint(
     definingClass = EXTENSION_CLASS_DESCRIPTOR,
-    name = "getPostType",
+    name = "getPostTypeKey",
 )
 
 // -----------------------------------
