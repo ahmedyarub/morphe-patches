@@ -24,4 +24,30 @@ internal object Constants {
             )
         )
     )
+
+    /**
+     * Instagram.
+     *
+     * Version codes differ per ABI, so they are deliberately not pinned: the patcher only
+     * needs them when several ABI releases share one version code.
+     *
+     * 446.0.0.49.77 is flagged experimental because the patch has been verified to apply
+     * and to produce the intended bytecode against that build, but its runtime behaviour on
+     * a device has not been confirmed.
+     */
+    val COMPATIBILITY_INSTAGRAM = Compatibility(
+        name = "Instagram",
+        packageName = "com.instagram.android",
+        apkFileType = ApkFileType.APKM,
+        appIconColor = 0xE1306C,
+        targets = listOf(
+            AppTarget(
+                version = "446.0.0.49.77",
+                isExperimental = true
+            ),
+            AppTarget(
+                version = "439.0.0.37.89"
+            )
+        )
+    )
 }
