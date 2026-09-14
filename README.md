@@ -15,7 +15,31 @@ Click here to add these patches to Morphe: https://morphe.software/add-source?gi
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.2.0](https://github.com/ahmedyarub/morphe-patches/releases/tag/v1.2.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;2 patches total
+> **[v1.3.0-dev.2](https://github.com/ahmedyarub/morphe-patches/releases/tag/v1.3.0-dev.2)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;12 patches total
+<details open>
+<summary>📦 Instagram&nbsp;&nbsp;•&nbsp;&nbsp;10 patches</summary>
+<br>
+
+**🎯 Supported versions:**
+
+| 🧪&nbsp;446.0.0.49.77 | 439.0.0.37.89 |
+| :---: | :---: |
+
+| 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
+|----------|----------------|-----------|
+| [Bypass signature check](#bypass-signature-check) |  |  |
+| [Disable analytics](#disable-analytics) | Blocks analytics requests sent to Instagram and Facebook servers. |  |
+| [Disable screenshot detection](#disable-screenshot-detection) | Disables screenshot detection in direct messages and stories. |  |
+| [Hide Instants](#hide-instants) | Hides Instants from DMs page. |  |
+| [Hide Threads profile button](#hide-threads-profile-button) | Hides the Threads button from the profile page action bar (top right of the profile page). |  |
+| [Hide ads](#hide-ads) | Hides ads in the feed. |  |
+| [Hide suggested content](#hide-suggested-content) | Choose the suggested content to hide using the patch options. | • Hide suggested reels<br>• Hide suggested stories<br>• Hide highlights in stories<br>• Hide suggested accounts |
+| [Improve image viewing](#improve-image-viewing) | Requests the maximum resolution images from the server. |  |
+| [Open links externally](#open-links-externally) | Opens links in the system browser instead of the in-app browser. |  |
+| [Sanitize share links](#sanitize-share-links) | Removes tracking parameters from links shared out of the app. |  |
+
+</details>
+
 <details open>
 <summary>📦 Reddit&nbsp;&nbsp;•&nbsp;&nbsp;2 patches</summary>
 <br>

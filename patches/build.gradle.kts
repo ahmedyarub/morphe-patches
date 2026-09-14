@@ -19,6 +19,11 @@ val patchListGeneratorClasspath = configurations.create("patchListGeneratorClass
 dependencies {
     compileOnly(libs.gson)
     patchListGeneratorClasspath(libs.gson)
+
+    // Shared helpers (returnEarly, findFreeRegister, ...).
+    implementation(libs.morphe.patches.library)
+    // Instagram specific patches and fingerprints shared with brosssh's bundle.
+    implementation(libs.instagram.morphe.patches.library)
 }
 
 tasks {
@@ -34,5 +39,12 @@ tasks {
     // Used by gradle-semantic-release-plugin.
     publish {
         dependsOn("generatePatchesList")
+    }
+}
+
+kotlin {
+    compilerOptions {
+        // The Instagram patch library exposes helpers as context parameters.
+        freeCompilerArgs = listOf("-Xcontext-parameters")
     }
 }

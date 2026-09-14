@@ -1,5 +1,31 @@
 rootProject.name = "morphe-patches"
 
+dependencyResolutionManagement {
+    repositories {
+        mavenLocal()
+        google()
+        mavenCentral()
+        // Shared Instagram patch library (brosssh), published to GitHub Packages.
+        maven {
+            name = "InstagramPatchesLibrary"
+            url = uri("https://maven.pkg.github.com/brosssh/instagram-morphe-patches-library")
+            credentials {
+                username = providers.gradleProperty("gpr.user").getOrElse(System.getenv("GITHUB_ACTOR"))
+                password = providers.gradleProperty("gpr.key").getOrElse(System.getenv("GITHUB_TOKEN"))
+            }
+        }
+        // Morphe shared patch library.
+        maven {
+            name = "MorpheRegistry"
+            url = uri("https://maven.pkg.github.com/MorpheApp/registry")
+            credentials {
+                username = providers.gradleProperty("gpr.user").getOrElse(System.getenv("GITHUB_ACTOR"))
+                password = providers.gradleProperty("gpr.key").getOrElse(System.getenv("GITHUB_TOKEN"))
+            }
+        }
+    }
+}
+
 pluginManagement {
     repositories {
         gradlePluginPortal()
@@ -18,4 +44,14 @@ pluginManagement {
 
 plugins {
     id("app.morphe.patches") version "1.3.4"
+}
+
+settings {
+    extensions {
+        defaultNamespace = "app.morphe.extension"
+
+        // Must resolve to an absolute path (not relative), otherwise extensions in
+        // subfolders fail to find the proguard config.
+        proguardFiles(rootProject.projectDir.resolve("extensions/proguard-rules.pro").toString())
+    }
 }
