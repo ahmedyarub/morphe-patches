@@ -27,8 +27,10 @@ internal object InAppBrowserFunctionFingerprint : Fingerprint(
 @Suppress("unused")
 val openLinksExternallyPatch = bytecodePatch(
     name = "Open links externally",
-    description = "Opens links in the system browser instead of the in-app browser.",
-    default = true,
+    description = "Opens links in the system browser instead of the in-app browser. " +
+        "Off by default: its fingerprint anchors on strings that Instagram 446 moved into a " +
+        "string factory, so the matched method has not been confirmed.",
+    default = false,
 ) {
     compatibleWith(COMPATIBILITY_INSTAGRAM)
 
