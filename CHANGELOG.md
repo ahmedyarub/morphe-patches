@@ -1,3 +1,9 @@
+## [1.3.2-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.3.1...v1.3.2-dev.1) (2026-09-14)
+
+### 🐛 Bug Fixes
+
+* **Instagram:** Pass a real URI to the analytics hook, and ship the link patches opt-in ([5a53c22](https://github.com/ahmedyarub/morphe-patches/commit/5a53c22a5b13e4f409f45616d203ab653d176dae))
+
 ## [1.3.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.3.0...v1.3.1) (2026-09-14)
 
 ### 🐛 Bug Fixes
