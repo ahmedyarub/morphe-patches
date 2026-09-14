@@ -1,3 +1,9 @@
+## [1.3.0-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.2.0...v1.3.0-dev.1) (2026-09-14)
+
+### ✨ New Features
+
+* **Instagram:** Migrate five patches from brosssh's bundle ([612d322](https://github.com/ahmedyarub/morphe-patches/commit/612d322129fa8389c0b71d7c6523ab01b31c18c9))
+
 ## [1.2.0](https://github.com/ahmedyarub/morphe-patches/compare/v1.1.0...v1.2.0) (2026-09-14)
 
 ### ✨ New Features
