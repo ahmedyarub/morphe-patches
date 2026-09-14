@@ -1,3 +1,9 @@
+## [1.3.3](https://github.com/ahmedyarub/morphe-patches/compare/v1.3.2...v1.3.3) (2026-09-14)
+
+### 🐛 Bug Fixes
+
+* **Instagram:** Keep this bundle's extension classes out of R8's reach ([35195e1](https://github.com/ahmedyarub/morphe-patches/commit/35195e181278b96e534a1d3d894beb7ec612b35f))
+
 ## [1.3.3-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.3.2...v1.3.3-dev.1) (2026-09-14)
 
 ### 🐛 Bug Fixes
