@@ -6,6 +6,7 @@
 
 package app.morphe.extension.instagram.settings.preference.widgets;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.preference.PreferenceCategory;
@@ -15,6 +16,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+// The Instagram-styled row replaces the framework layout outright, so neither onCreateView
+// nor onBindView has anything from super to keep.
+@SuppressLint("MissingSuperCall")
 public class CategoryPref extends PreferenceCategory {
     private boolean firstCategory;
 

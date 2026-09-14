@@ -22,11 +22,11 @@ internal object VideoVersionMapExtensionFingerprint : Fingerprint(
 )
 
 internal object ImmutablePandoVideoVersionMapperFingerprint : Fingerprint(
-    definingClass = "Lcom/instagram/model/mediasize/ImmutablePandoVideoVersion;",
+    definingClass = "/ImmutablePandoVideoVersion;",
     returnType = "Ljava/util/Map;",
 )
 
 internal object VideoVersionMapperFingerprint : Fingerprint(
-    definingClass = "Lcom/instagram/model/mediasize/VideoVersion;",
+    definingClass = "/VideoVersion;",
     returnType = "Ljava/util/Map;",
 )

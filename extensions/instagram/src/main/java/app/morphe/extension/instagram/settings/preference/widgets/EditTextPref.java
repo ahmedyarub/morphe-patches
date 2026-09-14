@@ -6,6 +6,7 @@
 
 package app.morphe.extension.instagram.settings.preference.widgets;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.preference.EditTextPreference;
 import android.util.AttributeSet;
@@ -17,6 +18,9 @@ import app.morphe.extension.instagram.patches.Links;
 import app.morphe.extension.instagram.settings.Settings;
 import app.morphe.extension.instagram.settings.preference.Helper;
 
+// The Instagram-styled row replaces the framework layout outright, so neither onCreateView
+// nor onBindView has anything from super to keep.
+@SuppressLint("MissingSuperCall")
 public class EditTextPref extends EditTextPreference {
     private static Helper helper;
 

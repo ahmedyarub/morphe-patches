@@ -120,11 +120,6 @@ internal object InstagramMainActivityNotificationRelatedFingerprint : Fingerprin
     strings = listOf("nme_ig_post_post_creation_notif", "nme_ig_post_story_creation_notif"),
 )
 
-internal object VideoMediaInIGTVFeedHasVideoVariantsFingerprint : Fingerprint(
-    returnType = "Z",
-    strings = listOf("id: ", " type: ", "InvalidVideoMediaInIGTVFeed"),
-)
-
 internal object AslSessionRelatedFingerprint : Fingerprint(
     returnType = "V",
     strings = listOf("asl_session_id", "is_video", "is_carousel"),

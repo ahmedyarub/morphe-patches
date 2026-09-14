@@ -361,7 +361,7 @@ public final class MaterialYouTheme {
                 instagramDark,
                 isMaterialYouAvailable(),
                 isAmoledAvailable(),
-                MaterialYouThemeAPI31.isReady(ThemeMode.AMOLED_MATERIAL_YOU)
+                Build.VERSION.SDK_INT >= 31 && MaterialYouThemeAPI31.isReady(ThemeMode.AMOLED_MATERIAL_YOU)
         );
     }
 

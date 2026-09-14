@@ -6,6 +6,7 @@
 
 package app.morphe.extension.instagram.settings.preference.widgets;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.preference.Preference;
@@ -28,6 +29,10 @@ import app.morphe.extension.instagram.constants.Constants;
 import app.morphe.extension.instagram.utils.InstaUtils;
 import app.morphe.extension.instagram.patches.dm.SavedMessagesHook;
 
+// The Instagram-styled row replaces the framework layout outright, so neither onCreateView nor
+// onBindView has anything from super to keep. The sibling widgets do the same; they escape the
+// check only because they extend a Preference subclass rather than Preference itself.
+@SuppressLint("MissingSuperCall")
 public class ButtonPref extends Preference {
     private final Context context;
 

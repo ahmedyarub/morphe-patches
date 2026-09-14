@@ -733,7 +733,7 @@ public class ObjectBrowser {
                 StringBuilder sb = new StringBuilder("List<");
                 for (int i = 0; i < typeArgs.length; i++) {
                     if (i > 0) sb.append(", ");
-                    String argName = typeArgs[i].getTypeName();
+                    String argName = typeName(typeArgs[i]);
                     int lastDot = argName.lastIndexOf('.');
                     if (lastDot >= 0) {
                         argName = argName.substring(lastDot + 1);
@@ -747,13 +747,22 @@ public class ObjectBrowser {
         return getClassName(field.getType());
     }
 
+    /**
+     * The name of a generic type argument. Type#getTypeName is API 28 and this library still
+     * builds against 26, so a plain class is named directly and anything else falls back to
+     * toString, which is what getTypeName returns for it anyway.
+     */
+    private static String typeName(Type type) {
+        return type instanceof Class ? ((Class<?>) type).getName() : type.toString();
+    }
+
     private static String getListItemTypeName(Field field) {
         Type genericType = field.getGenericType();
         if (genericType instanceof ParameterizedType) {
             ParameterizedType pt = (ParameterizedType) genericType;
             Type[] typeArgs = pt.getActualTypeArguments();
             if (typeArgs.length > 0) {
-                String name = typeArgs[0].getTypeName();
+                String name = typeName(typeArgs[0]);
                 int lastDot = name.lastIndexOf('.');
                 if (lastDot > 0) {
                     return name.substring(lastDot + 1);

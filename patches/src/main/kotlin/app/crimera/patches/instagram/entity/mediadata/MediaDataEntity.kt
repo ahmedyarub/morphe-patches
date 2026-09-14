@@ -9,6 +9,7 @@ package app.crimera.patches.instagram.entity.mediadata
 import app.crimera.patches.instagram.entity.decoder.EditMediaInfoGetCurrentMediaIdFingerprint
 import app.crimera.patches.instagram.entity.decoder.MEDIA_CLASS_NAME
 import app.crimera.patches.instagram.entity.decoder.MEDIAEXT_CLASS_NAME
+import app.crimera.patches.instagram.entity.decoder.USER_MODEL_CLASS_NAME
 import app.crimera.patches.instagram.entity.decoder.decoderEntity
 import app.crimera.patches.instagram.utils.Constants.MUSIC_INFO_CLASS
 import app.crimera.utils.changeFirstString
@@ -58,7 +59,11 @@ val mediaDataEntity =
             }
 
             // Extracting the get mention set method used media helper class.
-            GetMentionSetExtensionFingerprint.changeFirstString(LiveTreeMediaDictReelsMentionFingerprint.method.name)
+            val reelMentionsGetter =
+                mediaModelGetter("reel_mentions", "Ljava/util/List;")
+                    ?: LiveTreeMediaDictReelsMentionFingerprint.matchOrNull()?.method
+                    ?: throw PatchException("Could not identify the reel mentions getter")
+            GetMentionSetExtensionFingerprint.changeFirstString(reelMentionsGetter.name)
 
             InstagramMainActivityNotificationRelatedFingerprint.apply {
                 val strIndex = stringMatches.last().index
@@ -74,11 +79,10 @@ val mediaDataEntity =
             }
 
             // Extracting get video variants.
-            VideoMediaInIGTVFeedHasVideoVariantsFingerprint.method.apply {
-                val firstInvokeInterfaceInstruction = getInstruction(indexOfFirstInstruction(Opcode.INVOKE_INTERFACE))
-                val getVideoVariantsMethodName = firstInvokeInterfaceInstruction.methodExtractor().name
-                GetVideoVariantsV1ExtensionFingerprint.changeFirstString(getVideoVariantsMethodName)
-            }
+            val videoVariantsGetter =
+                mediaModelGetter("video_versions", "Ljava/util/List;")
+                    ?: throw PatchException("Could not identify the video variants getter")
+            GetVideoVariantsV1ExtensionFingerprint.changeFirstString(videoVariantsGetter.name)
 
             // Extracting method is video used in media class.
             AslSessionRelatedFingerprint.method.apply {
@@ -125,7 +129,11 @@ val mediaDataEntity =
             }
 
             // Extraction of user data used in extended media class.
-            GetUserDataWithoutUserSessionExtensionFingerprint.changeFirstString(LiveTreeMediaDictGetUserFingerprint.method.name)
+            val userGetter =
+                mediaModelGetter("user", USER_MODEL_CLASS_NAME)
+                    ?: LiveTreeMediaDictGetUserFingerprint.matchOrNull()?.method
+                    ?: throw PatchException("Could not identify the media user getter")
+            GetUserDataWithoutUserSessionExtensionFingerprint.changeFirstString(userGetter.name)
 
             // Extraction of description
             val commentObjectClassName: String
@@ -185,14 +193,37 @@ val mediaDataEntity =
                     }?.name
             messageAudioMethodName?.let { GetMessageAudioUrlExtensionFingerprint.changeFirstString(it) }
 
-            // More extended data.
-            ExtMediaDictVideoInfoMapperFingerprint.apply {
-                val moreExtendedMediaDataFieldName =
-                    LiveTreeMediaDictReelsMentionFingerprint.classDef.fields
-                        .first { it.type == classDef.type }
-                        .name
-                GetMoreExtendedDataExtensionFingerprint.changeFirstString(moreExtendedMediaDataFieldName)
+            // More extended data: since v446 the model decodes lazily and caches each value on a
+            // separate holder object, so the extension has to hop through the model field that
+            // points at that holder. Older builds cached in place, where the holder is instead the
+            // dict the json mapper writes to.
+            val cacheField = videoVariantsGetter.cacheFieldOrNull()?.takeIf { it.definingClass != mediaModelClass }
 
+            val moreExtendedMediaDataFieldName =
+                if (cacheField != null) {
+                    mutableClassDefBy { it.type == mediaModelClass }
+                        .fields
+                        .singleOrNull { it.type == cacheField.definingClass }
+                        ?.name
+                } else {
+                    ExtMediaDictVideoInfoMapperFingerprint.matchOrNull()?.let { mapper ->
+                        LiveTreeMediaDictReelsMentionFingerprint
+                            .matchOrNull()
+                            ?.classDef
+                            ?.fields
+                            ?.firstOrNull { it.type == mapper.classDef.type }
+                            ?.name
+                    }
+                }
+            moreExtendedMediaDataFieldName?.let { GetMoreExtendedDataExtensionFingerprint.changeFirstString(it) }
+
+            if (cacheField != null) {
+                GetVideoVariantsV2ExtensionFingerprint.changeFirstString(cacheField.name)
+
+                mediaModelGetter("image_versions2") { it.endsWith("/ImageInfo;") }
+                    ?.cacheFieldOrNull()
+                    ?.let { GetImageVariantsExtensionFingerprint.changeFirstString(it.name) }
+            } else {
                 // Match by field type near the key, not a fixed offset — the read can sit on either
                 // side of it, and for video_versions it is in the model's getter, not the mapper.
                 mutableClassDefBy { it.type == mediaModelClass }
@@ -201,8 +232,10 @@ val mediaDataEntity =
                         m.fieldNameNearString("video_versions") { type -> type == "Ljava/util/List;" }
                     }?.let { GetVideoVariantsV2ExtensionFingerprint.changeFirstString(it) }
 
-                ExtMediaDictImageInfoMapperFingerprint.method
-                    .fieldNameNearString("image_versions2") { it.endsWith("/ImageInfo;") }
+                ExtMediaDictImageInfoMapperFingerprint
+                    .matchOrNull()
+                    ?.method
+                    ?.fieldNameNearString("image_versions2") { it.endsWith("/ImageInfo;") }
                     ?.let { GetImageVariantsExtensionFingerprint.changeFirstString(it) }
             }
 

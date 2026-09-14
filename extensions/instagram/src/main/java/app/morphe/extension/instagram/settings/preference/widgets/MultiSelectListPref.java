@@ -6,6 +6,7 @@
 
 package app.morphe.extension.instagram.settings.preference.widgets;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.preference.MultiSelectListPreference;
 import android.preference.Preference;
@@ -18,6 +19,9 @@ import app.morphe.extension.instagram.settings.Settings;
 import app.morphe.extension.instagram.settings.preference.Helper;
 
 
+// The Instagram-styled row replaces the framework layout outright, so neither onCreateView
+// nor onBindView has anything from super to keep.
+@SuppressLint("MissingSuperCall")
 public class MultiSelectListPref extends MultiSelectListPreference {
     private static Helper helper;
 

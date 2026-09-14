@@ -7,6 +7,7 @@
 
 package app.morphe.extension.instagram.settings.preference.widgets;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.preference.SwitchPreference;
 import android.preference.Preference;
@@ -16,6 +17,9 @@ import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import app.morphe.extension.instagram.settings.preference.Helper;
 
+// The Instagram-styled row replaces the framework layout outright, so neither onCreateView
+// nor onBindView has anything from super to keep.
+@SuppressLint("MissingSuperCall")
 public class SwitchPref extends SwitchPreference {
     private static Helper helper;
     private View rowView;

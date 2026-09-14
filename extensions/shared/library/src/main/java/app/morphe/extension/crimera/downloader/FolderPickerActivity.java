@@ -7,6 +7,7 @@
 
 package app.morphe.extension.crimera.downloader;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -37,6 +38,7 @@ public class FolderPickerActivity extends AppCompatActivity {
     }
 
     @Override
+    @SuppressLint("WrongConstant")
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
@@ -44,6 +46,8 @@ public class FolderPickerActivity extends AppCompatActivity {
             Uri treeUri = data.getData();
             if (treeUri != null) {
                 try {
+                    // Masking the returned flags down to the two persistable ones is the
+                    // documented idiom; lint just cannot see that through the arithmetic.
                     int flags = data.getFlags() & (Intent.FLAG_GRANT_READ_URI_PERMISSION
                             | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
                     getContentResolver().takePersistableUriPermission(treeUri,
