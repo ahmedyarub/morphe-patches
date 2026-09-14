@@ -15,9 +15,19 @@ internal object HookFlagsLoadFingerprint : Fingerprint(
     name = "load",
 )
 
+internal object HookFlagsClinitFingerprint : Fingerprint(
+    definingClass = HOOK_FLAGS_DESCRIPTOR,
+    name = "<clinit>",
+)
+
 internal object SettingsStatusLoadFingerprint : Fingerprint(
     definingClass = ACTIVITY_SETTINGS_STATUS_CLASS,
     name = "load",
+)
+
+internal object SettingsStatusClinitFingerprint : Fingerprint(
+    definingClass = ACTIVITY_SETTINGS_STATUS_CLASS,
+    name = "<clinit>",
 )
 // ----------------------
 

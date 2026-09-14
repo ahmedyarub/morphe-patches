@@ -23,6 +23,7 @@ import app.crimera.patches.instagram.misc.stories.handleStoryButtonPatch
 import app.crimera.patches.instagram.utils.Constants.COMPATIBILITY_INSTAGRAM
 import app.crimera.patches.instagram.utils.Constants.DOWNLOAD_DESCRIPTOR
 import app.crimera.patches.instagram.utils.addFlags
+import app.crimera.patches.instagram.utils.enableSettings
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.bytecodePatch
@@ -77,6 +78,10 @@ val downloadMediaPatch =
                         )
                     }
             }
+
+            // The extension gates every download entry point on this, so without it the patch
+            // applies and then does nothing visible. piko sets it from its settings screen.
+            enableSettings("downloadMedia")
 
             addFlags("simpleOverflowMenuFlags")
         }
