@@ -1,3 +1,9 @@
+## [1.3.1-dev.2](https://github.com/ahmedyarub/morphe-patches/compare/v1.3.1-dev.1...v1.3.1-dev.2) (2026-09-14)
+
+### 🐛 Bug Fixes
+
+* **Instagram:** Correct two patches that mis-targeted their injection ([de34929](https://github.com/ahmedyarub/morphe-patches/commit/de34929c834e7f04aa4d3572b3e95c36e3106f63))
+
 ## [1.3.1-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.3.0...v1.3.1-dev.1) (2026-09-14)
 
 ### 🐛 Bug Fixes
