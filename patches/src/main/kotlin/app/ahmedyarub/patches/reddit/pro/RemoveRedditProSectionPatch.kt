@@ -1,14 +1,20 @@
 package app.ahmedyarub.patches.reddit.pro
 
 import app.ahmedyarub.patches.shared.Constants.COMPATIBILITY_REDDIT
+import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.patch.bytecodePatch
+import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+
+private const val MAX_CONST_4_REGISTER = 15
 
 @Suppress("unused")
 val removeRedditProSectionPatch = bytecodePatch(
     name = "Remove Reddit Pro section",
-    description = "Removes the Reddit Pro promos: the post creation and subreddit join " +
-            "upsell sheets, and the Reddit Pro banner on the profile feed.",
+    description = "Removes the Reddit Pro section from the community drawer, and the Reddit " +
+            "Pro promos: the post creation and subreddit join upsell sheets, and the " +
+            "Reddit Pro banner on the profile feed.",
     default = true
 ) {
     compatibleWith(COMPATIBILITY_REDDIT)
@@ -38,5 +44,27 @@ val removeRedditProSectionPatch = bytecodePatch(
                 return-object v0
             """
         )
+
+        // Remove the Reddit Pro section from the community drawer.
+        //
+        // Reporting no Pro status makes the drawer take the branch that clears the section
+        // header, the "Trends"/"Try Reddit Pro" entry and the "Links" entry, which is a state
+        // the app already handles for accounts without Reddit Pro.
+        CommunityDrawerProStatusFingerprint.let {
+            val moveResultIndex = it.instructionMatches[1].index
+
+            it.method.apply {
+                val register = getInstruction<OneRegisterInstruction>(moveResultIndex).registerA
+
+                // const/4 only encodes a 4 bit register.
+                val setNull = if (register <= MAX_CONST_4_REGISTER) {
+                    "const/4 v$register, 0x0"
+                } else {
+                    "const/16 v$register, 0x0"
+                }
+
+                addInstruction(moveResultIndex + 1, setNull)
+            }
+        }
     }
 }

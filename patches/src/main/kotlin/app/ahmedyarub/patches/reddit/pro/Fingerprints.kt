@@ -1,8 +1,10 @@
 package app.ahmedyarub.patches.reddit.pro
 
 import app.morphe.patcher.Fingerprint
+import app.morphe.patcher.InstructionLocation.MatchAfterImmediately
 import app.morphe.patcher.fieldAccess
 import app.morphe.patcher.methodCall
+import app.morphe.patcher.opcode
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 
@@ -81,6 +83,44 @@ internal object ProfileFeedUpsellElementFingerprint : Fingerprint(
             definingClass = PRO_PROMO_ELIGIBILITY_CLASS,
             name = "PUBLISHER",
             opcode = Opcode.SGET_OBJECT
+        )
+    )
+)
+
+/**
+ * The community drawer presenter's collector for the account's Reddit Pro status.
+ *
+ * It reads `MyAccount.getProStatus()` and, when the result is `null`, clears the three
+ * fields that make up the drawer's Reddit Pro section: the `HeaderItem.REDDIT_PRO`
+ * header ("Reddit Pro"), the entry below it ("Trends" when Pro is enabled, otherwise
+ * "Try Reddit Pro"), and the Links entry. When it is not null, it builds all three.
+ *
+ * Hooking here rather than at the list-building site means the patch reuses a state the
+ * app already supports - an account with no Pro status - instead of removing items from
+ * a list the app has already decided to show.
+ *
+ * The class, method and fields are all obfuscated, so the anchors are the unobfuscated
+ * `MyAccount`, `RedditProStatus` and `HeaderItem` references, which also pin the match to
+ * the one branch of this merged (R8 switch-dispatched) collector that handles Pro status.
+ */
+internal object CommunityDrawerProStatusFingerprint : Fingerprint(
+    name = "emit",
+    accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.FINAL),
+    returnType = "Ljava/lang/Object;",
+    parameters = listOf("Ljava/lang/Object;", "L"),
+    filters = listOf(
+        methodCall(
+            smali = "Lcom/reddit/domain/model/MyAccount;->" +
+                    "getProStatus()Lcom/reddit/domain/model/pro/RedditProStatus;"
+        ),
+        opcode(Opcode.MOVE_RESULT_OBJECT, MatchAfterImmediately()),
+        fieldAccess(
+            smali = "Lcom/reddit/domain/model/pro/RedditProStatus;->" +
+                    "ENABLED:Lcom/reddit/domain/model/pro/RedditProStatus;"
+        ),
+        fieldAccess(
+            smali = "Lcom/reddit/screens/drawer/community/HeaderItem;->" +
+                    "REDDIT_PRO:Lcom/reddit/screens/drawer/community/HeaderItem;"
         )
     )
 )
