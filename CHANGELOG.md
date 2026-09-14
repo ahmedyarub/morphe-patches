@@ -1,3 +1,27 @@
+## [1.3.3](https://github.com/ahmedyarub/morphe-patches/compare/v1.3.2...v1.3.3) (2026-09-14)
+
+### 🐛 Bug Fixes
+
+* **Instagram:** Keep this bundle's extension classes out of R8's reach ([35195e1](https://github.com/ahmedyarub/morphe-patches/commit/35195e181278b96e534a1d3d894beb7ec612b35f))
+
+## [1.3.3-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.3.2...v1.3.3-dev.1) (2026-09-14)
+
+### 🐛 Bug Fixes
+
+* **Instagram:** Keep this bundle's extension classes out of R8's reach ([35195e1](https://github.com/ahmedyarub/morphe-patches/commit/35195e181278b96e534a1d3d894beb7ec612b35f))
+
+## [1.3.2](https://github.com/ahmedyarub/morphe-patches/compare/v1.3.1...v1.3.2) (2026-09-14)
+
+### 🐛 Bug Fixes
+
+* **Instagram:** Pass a real URI to the analytics hook, and ship the link patches opt-in ([5a53c22](https://github.com/ahmedyarub/morphe-patches/commit/5a53c22a5b13e4f409f45616d203ab653d176dae))
+
+## [1.3.2-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.3.1...v1.3.2-dev.1) (2026-09-14)
+
+### 🐛 Bug Fixes
+
+* **Instagram:** Pass a real URI to the analytics hook, and ship the link patches opt-in ([5a53c22](https://github.com/ahmedyarub/morphe-patches/commit/5a53c22a5b13e4f409f45616d203ab653d176dae))
+
 ## [1.3.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.3.0...v1.3.1) (2026-09-14)
 
 ### 🐛 Bug Fixes

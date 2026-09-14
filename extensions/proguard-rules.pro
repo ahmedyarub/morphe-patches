@@ -4,6 +4,12 @@
 -keep class app.morphe.** {
   *;
 }
+
+# This bundle's own extension classes. Without a keep rule R8 shrinks them out of the
+# .mpe, and every patch calling them fails at runtime with NoClassDefFoundError.
+-keep class app.ahmedyarub.** {
+  *;
+}
 -keep class com.google.** {
   *;
 }
