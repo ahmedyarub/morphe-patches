@@ -13,9 +13,10 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
-import app.morphe.util.indexOfFirstInstructionOrThrow
 import app.morphe.util.registersUsed
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 
 internal const val LINKS_CLASS = "Lapp/ahmedyarub/extension/instagram/Links;"
 
@@ -60,8 +61,17 @@ internal fun hookShareLinks(extensionMethodName: String) {
         val match = fingerprint.matchOrNull() ?: return@forEach
 
         match.method.apply {
-            val assignmentIndex =
-                indexOfFirstInstructionOrThrow(match.stringMatches.first().index, Opcode.IPUT_OBJECT)
+            // The register must provably hold a String: the hook passes it to a
+            // String parameter, and a mismatch is a verify error when the class loads,
+            // which the extension's own error handling cannot catch. So the first field
+            // store after the anchor is not assumed to be the URL - the first store to a
+            // String field is used, and if there is none this call site is left alone.
+            val assignmentIndex = instructions.withIndex().firstOrNull { (index, instruction) ->
+                index > match.stringMatches.first().index &&
+                    instruction.opcode == Opcode.IPUT_OBJECT &&
+                    ((instruction as? ReferenceInstruction)?.reference as? FieldReference)?.type ==
+                    "Ljava/lang/String;"
+            }?.index ?: return@forEach
 
             addInstructions(assignmentIndex, hook(instructions[assignmentIndex].registersUsed[0]))
             hooked++
@@ -75,6 +85,8 @@ internal fun hookShareLinks(extensionMethodName: String) {
     ).forEach { fingerprint ->
         val match = fingerprint.matchOrNull() ?: return@forEach
 
+        // Safe by construction: the fingerprint only matches methods returning String, so
+        // the register feeding return-object is a String.
         match.method.apply {
             val returnInstruction = instructions.last { it.opcode == Opcode.RETURN_OBJECT }
 

@@ -104,12 +104,14 @@ public final class Links {
 
         try {
             if (uri != null && uri.getPath() != null) {
-                String host = uri.getHost();
-                String path = uri.getPath();
-
-                block = (host != null
-                        && (host.contains("graph.instagram.com") || host.contains("graph.facebook.com")))
-                        || path.contains("/logging_client_events");
+                // Only the dedicated telemetry endpoint is blocked.
+                //
+                // piko also blocks the graph.instagram.com and graph.facebook.com hosts
+                // outright, but those serve the GraphQL API the app runs on - feed, direct
+                // messages, profiles - not just analytics. piko can afford that because the
+                // rule sits behind an opt-in setting; with the setting removed it applies to
+                // everyone, and it breaks the app.
+                block = uri.getPath().contains("/logging_client_events");
             }
         } catch (Exception ex) {
             Logger.printException(() -> "interceptUri failed", ex);
