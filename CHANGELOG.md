@@ -1,3 +1,10 @@
+## [1.3.0](https://github.com/ahmedyarub/morphe-patches/compare/v1.2.0...v1.3.0) (2026-09-14)
+
+### ✨ New Features
+
+* **Instagram:** Add five patches adapted from piko ([8dd5792](https://github.com/ahmedyarub/morphe-patches/commit/8dd579254bf0eb993c9453a7322255f80e9c7d33))
+* **Instagram:** Migrate five patches from brosssh's bundle ([612d322](https://github.com/ahmedyarub/morphe-patches/commit/612d322129fa8389c0b71d7c6523ab01b31c18c9))
+
 ## [1.3.0-dev.2](https://github.com/ahmedyarub/morphe-patches/compare/v1.3.0-dev.1...v1.3.0-dev.2) (2026-09-14)
 
 ### ✨ New Features
