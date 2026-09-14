@@ -1,3 +1,9 @@
+## [1.3.1-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.3.0...v1.3.1-dev.1) (2026-09-14)
+
+### 🐛 Bug Fixes
+
+* **Instagram:** Stop Disable analytics blocking the GraphQL API ([4ff6c2f](https://github.com/ahmedyarub/morphe-patches/commit/4ff6c2fb00cefce7eeee522293b432646da3d0b9))
+
 ## [1.3.0](https://github.com/ahmedyarub/morphe-patches/compare/v1.2.0...v1.3.0) (2026-09-14)
 
 ### ✨ New Features
