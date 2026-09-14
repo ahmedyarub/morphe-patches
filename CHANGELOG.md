@@ -1,3 +1,9 @@
+## [1.2.0-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.1.0...v1.2.0-dev.1) (2026-09-14)
+
+### ✨ New Features
+
+* **Reddit:** Remove the Resources and Games on Reddit drawer sections ([7688116](https://github.com/ahmedyarub/morphe-patches/commit/7688116ffe71b43a184f478974dc24fc4700aa82))
+
 ## [1.1.0](https://github.com/ahmedyarub/morphe-patches/compare/v1.0.0...v1.1.0) (2026-09-14)
 
 ### ✨ New Features
