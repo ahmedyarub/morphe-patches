@@ -31,9 +31,8 @@ internal object TigonServiceLayerStartRequestFingerprint : Fingerprint(
 @Suppress("unused")
 val disableAnalyticsPatch = bytecodePatch(
     name = "Disable analytics",
-    description = "Blocks analytics requests sent to Instagram and Facebook servers. " +
-        "Off by default: earlier builds crashed the app.",
-    default = false,
+    description = "Blocks analytics requests sent to Instagram and Facebook servers.",
+    default = true,
 ) {
     compatibleWith(COMPATIBILITY_INSTAGRAM)
 

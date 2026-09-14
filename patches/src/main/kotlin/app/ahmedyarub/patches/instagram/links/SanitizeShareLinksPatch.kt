@@ -13,9 +13,8 @@ import app.morphe.patcher.patch.bytecodePatch
 @Suppress("unused")
 val sanitizeShareLinksPatch = bytecodePatch(
     name = "Sanitize share links",
-    description = "Removes tracking parameters from links shared out of the app. " +
-        "Off by default: an earlier build crashed the app when copying a link.",
-    default = false,
+    description = "Removes tracking parameters from links shared out of the app.",
+    default = true,
 ) {
     compatibleWith(COMPATIBILITY_INSTAGRAM)
 
