@@ -2,8 +2,8 @@ group = "app.ahmedyarub"
 
 patches {
     about {
-        name = "Ahmed Yarub's Morphe Patches"
-        description = "Personal Morphe patches"
+        name = "Ahmed Yarub's Patches"
+        description = "Personal patches for use with Morphe"
         source = "git@github.com:ahmedyarub/morphe-patches.git"
         author = "ahmedyarub"
         contact = "na"

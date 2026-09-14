@@ -1,6 +1,6 @@
-# 🧩 Morphe Patches — ahmedyarub
+# 🧩 Ahmed Yarub's Patches
 
-Personal [Morphe](https://morphe.software) patches.
+Personal patches for use with [Morphe](https://morphe.software).
 
 ## ❓ About
 
