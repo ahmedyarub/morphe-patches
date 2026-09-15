@@ -8,7 +8,6 @@ package app.morphe.extension.instagram.entity;
 
 import java.util.Map;
 import java.util.HashMap;
-import com.instagram.user.model.FriendshipStatus;
 import app.morphe.extension.crimera.PikoUtils;
 
 public class UserFriendshipStatus extends Entity {
@@ -21,8 +20,11 @@ public class UserFriendshipStatus extends Entity {
 
     public Map<String, Boolean> getMappings(){
         try {
+            // The status type is named reflectively: 446 dropped
+            // com.instagram.user.model.FriendshipStatus, and naming a class that no longer exists
+            // fails at class load rather than at the call.
             Class<?> helperClass = Class.forName("classname");
-            return (Map) super.getMethod(helperClass, "methodname", new Class[]{FriendshipStatus.class}, this.obj);
+            return (Map) super.getMethod(helperClass, "methodname", new Class[]{this.obj.getClass()}, this.obj);
         } catch (Exception e) {
             PikoUtils.logger(e);
         }

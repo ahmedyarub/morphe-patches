@@ -11,22 +11,26 @@ import java.util.Map;
 import java.util.HashMap;
 import app.morphe.extension.crimera.PikoUtils;
 
-import com.instagram.model.mediasize.VideoVersion;
-import com.instagram.model.mediasize.ImmutablePandoVideoVersion;
-import com.instagram.model.mediasize.VideoVersionIntf;
-
 import app.morphe.extension.crimera.downloader.MediaType;
 
 public class VideoData extends Entity implements MediaInterface {
-    private final VideoVersionIntf obj;
+
+    /**
+     * The video variant, held untyped. piko names VideoVersionIntf and
+     * ImmutablePandoVideoVersion outright, but 446 moved both from
+     * com.instagram.model.mediasize to com.instagram.api.schemas, and a hard reference to a class
+     * that has moved is a NoClassDefFoundError the moment a variant is constructed — which is
+     * every download. Everything this class needs is reached reflectively anyway.
+     */
+    private final Object obj;
     private final boolean isPandoVideoVersion;
 
     public VideoData(Object obj) {
         super(obj);
 
-        this.obj = (VideoVersionIntf) obj;
-        this.isPandoVideoVersion = obj instanceof ImmutablePandoVideoVersion;
-
+        this.obj = obj;
+        this.isPandoVideoVersion = obj != null &&
+                obj.getClass().getName().endsWith(".ImmutablePandoVideoVersion");
     }
 
     private Map immutablePandoVideoVersionMap(){
@@ -77,7 +81,7 @@ public class VideoData extends Entity implements MediaInterface {
     }
 
     public String getUrl() throws Exception {
-        return this.obj.getUrl();
+        return (String) super.getMethod(this.obj, "getUrl");
     }
 
     public MediaType getMediaType(){
