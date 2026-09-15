@@ -125,6 +125,15 @@ internal object InstagramMainActivityNotificationRelatedFingerprint : Fingerprin
     strings = listOf("nme_ig_post_post_creation_notif", "nme_ig_post_story_creation_notif"),
 )
 
+/**
+ * The mapper that turns an image info object back into its json form, and so names every getter
+ * on it next to the key it belongs to.
+ */
+internal object ImageInfoMapperFingerprint : Fingerprint(
+    returnType = "Ljava/util/Map;",
+    strings = listOf("additional_candidates", "XDTImageCandidate", "candidates", "scrubber_spritesheet_info_candidates"),
+)
+
 internal object AslSessionRelatedFingerprint : Fingerprint(
     returnType = "V",
     strings = listOf("asl_session_id", "is_video", "is_carousel"),

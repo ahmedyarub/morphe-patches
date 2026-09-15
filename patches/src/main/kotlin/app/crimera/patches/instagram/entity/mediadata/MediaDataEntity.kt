@@ -53,10 +53,28 @@ val mediaDataEntity =
             GetUserDataWithUserSessionExtensionFingerprint.changeFirstString(GetUserDataFromMediaFingerprint.method.name)
 
             // Extracting image variants list.
-            AyuMidcardMediaHelperImageObjectMethodFingerprint.method.apply {
-                val imageVariantsIndex = instructions.indexOfLast { it.opcode == Opcode.INVOKE_INTERFACE }
-                val imageVariantsMethodName = getInstruction(imageVariantsIndex).methodExtractor().name
-                GetImageVariantsExtensionFingerprint.changeStringAt(1, imageVariantsMethodName)
+            //
+            // The image info object exposes two lists — the image candidates and the spins
+            // underlying media candidates — and piko picks whichever the last invoke-interface in
+            // an unrelated helper happens to name, which on 446 is neither. The mapper that writes
+            // this object back to json names each getter beside its own key, so the candidates
+            // getter is the last list-returning call before the "candidates" key is put.
+            ImageInfoMapperFingerprint.method.apply {
+                val candidatesStringIndex =
+                    instructions.indexOfFirst { instruction ->
+                        (instruction.opcode == Opcode.CONST_STRING || instruction.opcode == Opcode.CONST_STRING_JUMBO) &&
+                            instruction.getReference<StringReference>()?.string == "candidates"
+                    }
+                if (candidatesStringIndex < 0) throw PatchException("The image info mapper has no candidates key")
+
+                val candidatesGetter =
+                    instructions
+                        .take(candidatesStringIndex)
+                        .lastOrNull { instruction ->
+                            instruction.opcode == Opcode.INVOKE_INTERFACE &&
+                                instruction.getReference<MethodReference>()?.returnType == "Ljava/util/List;"
+                        } ?: throw PatchException("Could not identify the image candidates getter")
+                GetImageVariantsExtensionFingerprint.changeStringAt(1, candidatesGetter.methodExtractor().name)
             }
 
             // Extracting the get mention set method used media helper class.
