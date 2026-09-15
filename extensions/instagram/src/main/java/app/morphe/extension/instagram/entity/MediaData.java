@@ -131,7 +131,9 @@ public class MediaData extends Entity {
     private String getMediaExtension(MediaType mediaType) throws Exception {
         String imageExtension = ".jpg";
         String videoExtension = ".mp4";
-        String audioExtension = ".mp3";
+        // Voice messages are AAC in an MP4 container (ftypisom/mp41), not MP3. Naming them
+        // .mp3 makes the media scanner reject the file, so it never appears in the gallery.
+        String audioExtension = ".m4a";
 
         if (mediaType.equals(MediaType.ANY)) {
             if (this.isVideo()) {

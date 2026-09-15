@@ -199,7 +199,7 @@ public class DownloadUtils {
         if (mediaType.equals(MediaType.AUDIO)) {
             AudioMediaInterface audioMedia = mediaInfo.getMediaAt(position).getAudioMedia();
             String audioUrl = audioMedia.getAudioUrl();
-            String fileName = audioMedia.getDownloadName() + ".mp3";
+            String fileName = audioMedia.getDownloadName() + ".m4a";
             downloader.enqueue(new DownloadRequest(audioUrl, Constants.DEFAULT_AUDIO_FOLDER, fileName));
 
         } else if (position != -1) {
