@@ -1,3 +1,17 @@
+## [1.5.0](https://github.com/ahmedyarub/morphe-patches/compare/v1.4.0...v1.5.0) (2026-09-15)
+
+### 🐛 Bug Fixes
+
+* **Instagram:** Name downloaded voice messages .m4a ([5b24d25](https://github.com/ahmedyarub/morphe-patches/commit/5b24d25661025fd86c8cf76773e0830a30d4e85b))
+* **Instagram:** Point the DM download hook at the real save routine ([ec7bc78](https://github.com/ahmedyarub/morphe-patches/commit/ec7bc786a7523257c4d487238f6029da2b6abd02))
+* **Instagram:** Read direct message fields from their declaring class ([c87b5ab](https://github.com/ahmedyarub/morphe-patches/commit/c87b5ab979477539456c21a1ff63f8f3f210f417))
+* **Instagram:** Resolve the DM message type instead of hardcoding it ([b17cf4d](https://github.com/ahmedyarub/morphe-patches/commit/b17cf4d60f3ad8ff2e1cd63f76501e688418db16))
+
+### ✨ New Features
+
+* **Instagram:** Direct message patches on 446 ([f652c13](https://github.com/ahmedyarub/morphe-patches/commit/f652c135d1bacccdaf6ef3c3306955f262b20206))
+* **Instagram:** Direct message patches on 446 ([aeb0dff](https://github.com/ahmedyarub/morphe-patches/commit/aeb0dff96f45e4e3ad42722ef4e0ade76b9829cc))
+
 ## [1.5.0-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.4.0...v1.5.0-dev.1) (2026-09-15)
 
 ### 🐛 Bug Fixes
