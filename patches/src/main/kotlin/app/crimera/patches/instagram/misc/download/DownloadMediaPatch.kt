@@ -9,37 +9,39 @@ package app.crimera.patches.instagram.misc.download
 import app.crimera.patches.instagram.entity.decoder.decoderEntity
 import app.crimera.patches.instagram.entity.dialogbox.instagramDialogBoxEntity
 import app.crimera.patches.instagram.entity.mediadata.mediaDataEntity
+import app.crimera.patches.instagram.entity.messageInfoEntity.GetMessageTypeExtension
+import app.crimera.patches.instagram.entity.messageInfoEntity.directMessageClass
 import app.crimera.patches.instagram.entity.originalSoundDataIntf.originalSoundDataIntfEntity
 import app.crimera.patches.instagram.entity.trackDataIntf.trackDataIntfEntity
+import app.crimera.patches.instagram.entity.userdata.userDataEntity
 import app.crimera.patches.instagram.entity.videoData.videoDataEntity
 import app.crimera.patches.instagram.misc.directMessage.saveAllMessages.saveAllMessagesPatch
+import app.crimera.patches.instagram.misc.extension.sharedExtensionPatch
 import app.crimera.patches.instagram.misc.hookFlags.hookFlagsPatch
 import app.crimera.patches.instagram.misc.overflowMenuButton.posts.addOverflowMenuButtonAttributes
 import app.crimera.patches.instagram.misc.overflowMenuButton.posts.debugOverflowButton.debugOverflowMenuButtonPatch
 import app.crimera.patches.instagram.misc.overflowMenuButton.posts.hookFeedSheetPatch
 import app.crimera.patches.instagram.misc.overflowMenuButton.posts.hookOverflowMenuButton
 import app.crimera.patches.instagram.misc.overflowMenuButton.reels.hookReelOverflowMenuButton
-import app.crimera.patches.instagram.misc.extension.sharedExtensionPatch
 import app.crimera.patches.instagram.misc.stories.handleStoryButtonPatch
 import app.crimera.patches.instagram.utils.Constants.COMPATIBILITY_INSTAGRAM
 import app.crimera.patches.instagram.utils.Constants.DOWNLOAD_DESCRIPTOR
-import app.crimera.patches.instagram.entity.userdata.userDataEntity
 import app.crimera.patches.instagram.utils.addFlags
 import app.crimera.patches.instagram.utils.enableSettings
+import app.crimera.utils.changeFirstString
+import app.crimera.utils.changeString
+import app.crimera.utils.changeStringAt
+import app.crimera.utils.classNameToExtension
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
-import app.crimera.patches.instagram.entity.messageInfoEntity.directMessageClass
-import app.morphe.util.getReference
-import com.android.tools.smali.dexlib2.Opcode
-import com.android.tools.smali.dexlib2.iface.reference.FieldReference
-import com.android.tools.smali.dexlib2.iface.reference.MethodReference
-import app.crimera.patches.instagram.entity.messageInfoEntity.GetMessageTypeExtension
-import app.crimera.utils.changeFirstString
-import app.crimera.utils.changeStringAt
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.smali.ExternalLabel
+import app.morphe.util.getReference
 import com.android.tools.smali.dexlib2.AccessFlags
+import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.reference.FieldReference
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
 @Suppress("unused")
 val downloadMediaPatch =
@@ -130,8 +132,13 @@ val downloadMediaPatch =
                         .fields
                         .single { !AccessFlags.STATIC.isSet(it.accessFlags) }
 
-                GetMessageTypeExtension.changeFirstString(itemTypeField.name)
-                GetMessageTypeExtension.changeStringAt(1, itemTypeNameField.name)
+                // The declaring class travels with each name: the concrete message class redeclares
+                // names that already exist on its base with a different type, so a lookup by name
+                // alone finds the wrong field and reads null.
+                GetMessageTypeExtension.changeString("itemTypeOwner", classNameToExtension(itemTypeField.definingClass))
+                GetMessageTypeExtension.changeString("itemTypeField", itemTypeField.name)
+                GetMessageTypeExtension.changeString("itemTypeNameOwner", classNameToExtension(itemTypeAccessor.returnType))
+                GetMessageTypeExtension.changeString("itemTypeNameField", itemTypeNameField.name)
 
                 val parameterTypes = saveRoutine.parameterTypes.map { it.toString() }
                 val saverParameter = parameterTypes.indexOf(saverClass)

@@ -63,6 +63,21 @@ public class Entity {
         return getField(this.obj, fieldName);
     }
 
+    /**
+     * Reads a field from the class that declares it. Instagram subclasses redeclare field names
+     * that already exist on their base with a different type, so a lookup by name alone can find
+     * the wrong field and silently read null.
+     */
+    public Object getFieldIn(String declaringClassName, String fieldName) throws Exception {
+        Field field = Class.forName(declaringClassName).getDeclaredField(fieldName);
+        field.setAccessible(true);
+        return field.get(this.obj);
+    }
+
+    public Entity getFieldAsEntityIn(String declaringClassName, String fieldName) throws Exception {
+        return new Entity(getFieldIn(declaringClassName, fieldName));
+    }
+
     public Entity getFieldAsEntity(String fieldName) throws Exception {
         Object object = getField(fieldName);
         return new Entity(object);

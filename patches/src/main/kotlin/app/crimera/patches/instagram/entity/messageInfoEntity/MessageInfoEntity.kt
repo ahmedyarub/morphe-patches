@@ -6,8 +6,7 @@
 
 package app.crimera.patches.instagram.entity.messageInfoEntity
 
-import app.crimera.utils.changeFirstString
-import app.crimera.utils.changeStringAt
+import app.crimera.utils.changeString
 import app.crimera.utils.extensionToClassName
 import app.crimera.utils.fieldExtractor
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
@@ -31,7 +30,8 @@ val messageInfoEntity =
                 method.apply {
                     val audioDataIGetObjectIndex = indexOfFirstInstruction(strIndex, Opcode.IGET_OBJECT)
                     val iGetObjectMetaData = getInstruction(audioDataIGetObjectIndex).fieldExtractor()
-                    GetAudioMediaExtension.changeFirstString(iGetObjectMetaData.name)
+                    GetAudioMediaExtension.changeString("audioOwner", iGetObjectMetaData.definingClass)
+                    GetAudioMediaExtension.changeString("audioField", iGetObjectMetaData.name)
                     directMessageClass = extensionToClassName(iGetObjectMetaData.definingClass)
 
                     mutableClassDefBy(extensionToClassName(iGetObjectMetaData.returnType))
@@ -41,8 +41,9 @@ val messageInfoEntity =
                                 "Ljava/lang/Integer;"
                         }.apply {
                             val mediaIGetObjectIndex = indexOfFirstInstruction(Opcode.IGET_OBJECT)
-                            val fieldName = getInstruction(mediaIGetObjectIndex).fieldExtractor().name
-                            GetAudioMediaExtension.changeStringAt(1, fieldName)
+                            val mediaField = getInstruction(mediaIGetObjectIndex).fieldExtractor()
+                            GetAudioMediaExtension.changeString("audioMediaOwner", mediaField.definingClass)
+                            GetAudioMediaExtension.changeString("audioMediaField", mediaField.name)
                         }
                 }
             }
