@@ -38,12 +38,22 @@ import com.instagram.common.session.UserSession;
 
 public class FeedButton {
 
-    private static MediaOption$Option initOverflowButton(String tag, int randomIndex, String drawableResName){
+    /**
+     * Builds one added menu option, positioned after the app's own.
+     *
+     * The second constructor argument is the enum's ordinal, and an enum constant's ordinal has to
+     * be its index in $VALUES: the app indexes options by it — its own logging does a packed switch
+     * on ordinal() — and Kotlin's enum entries assume the same. piko passes a fixed 500, which is
+     * hundreds past the end of the array. The added constants are appended to $VALUES in the order
+     * below, so their ordinals continue from the original count.
+     */
+    private static MediaOption$Option initOverflowButton(String tag, int addedIndex, String drawableResName){
         int drawableIconId = ResourceUtils.getIdentifier(ResourceType.DRAWABLE,drawableResName);
-        return new MediaOption$Option(tag, randomIndex, drawableIconId);
+        return new MediaOption$Option(tag, MediaOption$Option.$values().length + addedIndex, drawableIconId);
     }
 
     public static MediaOption$Option[] addToMenuOptionArray() {
+        Logger.printInfo(() -> "addToMenuOptionArray reached, downloadMedia=" + SettingsStatus.downloadMedia);
         MediaOption$Option[] originalArray = MediaOption$Option.$values();
         List<MediaOption$Option> additionalButtonsList = new ArrayList<>();
 
@@ -103,19 +113,19 @@ public class FeedButton {
     }
 
     public static MediaOption$Option downloadOverflowButton(){
-        return FeedButton.initOverflowButton("PIKO_DOWNLOAD", 500, UI.DRAWABLE_DOWNLOAD_ICON);
+        return FeedButton.initOverflowButton("PIKO_DOWNLOAD", 0, UI.DRAWABLE_DOWNLOAD_ICON);
     }
 
     public static MediaOption$Option morePostOptionOverflowButton(){
-        return FeedButton.initOverflowButton("PIKO_MORE_POST_OPTION", 501, UI.DRAWABLE_BLUB_ICON);
+        return FeedButton.initOverflowButton("PIKO_MORE_POST_OPTION", 1, UI.DRAWABLE_BLUB_ICON);
     }
 
     public static MediaOption$Option debugOverflowButton(){
-        return FeedButton.initOverflowButton("PIKO_DEBUG", 502, UI.DRAWABLE_DEBUG_ICON);
+        return FeedButton.initOverflowButton("PIKO_DEBUG", 3, UI.DRAWABLE_DEBUG_ICON);
     }
 
     public static MediaOption$Option externalDownloaderOverflowButton(){
-        return FeedButton.initOverflowButton("PIKO_EXTERNAL_DOWNLOADER", 503, UI.DRAWABLE_DOWNLOAD_ICON);
+        return FeedButton.initOverflowButton("PIKO_EXTERNAL_DOWNLOADER", 2, UI.DRAWABLE_DOWNLOAD_ICON);
     }
 
 
@@ -129,6 +139,9 @@ public class FeedButton {
 
     public static void addFeedOverflowButton(Object buttonAdderObject, ArrayList buttonlist){
         try {
+            Logger.printInfo(() -> "addFeedOverflowButton enter, adder=" + buttonAdderObject.getClass().getName()
+                    + " list=" + System.identityHashCode(buttonlist) + " size=" + buttonlist.size()
+                    + " enableDownload=" + Pref.enableDownload());
             if(Pref.pikoDebug()){
                 addButton(MediaOption$Option.PIKO_DEBUG, str("piko_debug"), buttonAdderObject, buttonlist);
             }
@@ -141,7 +154,11 @@ public class FeedButton {
             if(Pref.moreOptionsOnPost()) {
                 addButton(MediaOption$Option.PIKO_MORE_POST_OPTION, str("piko_more_options"), buttonAdderObject, buttonlist);
             }
+            Logger.printInfo(() -> "addFeedOverflowButton exit, list=" + System.identityHashCode(buttonlist)
+                    + " size=" + buttonlist.size()
+                    + (buttonlist.isEmpty() ? "" : " last=" + buttonlist.get(buttonlist.size() - 1).getClass().getName()));
         } catch (Exception e) {
+            Logger.printInfo(() -> "addFeedOverflowButton failed: " + e);
             Logger.printException(() -> "Error at addReelButton",e);
         }
     }
