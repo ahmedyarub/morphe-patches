@@ -15,6 +15,9 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
+import app.morphe.patcher.patch.PatchException
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import app.morphe.util.getReference
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.smali.ExternalLabel
 import app.morphe.util.indexOfFirstInstruction
@@ -56,26 +59,29 @@ val handleStoryButtonPatch =
 
             val STORY_BUTTON_EXTENSION_CLASS = "${PATCHES_DESCRIPTOR}/story/StoryButton;"
             // Add button on self story bottom sheet.
+            //
+            // piko looks for an if-eqz followed by an iget-object and takes whatever register the
+            // instruction before it wrote. In 446 that is an iget-boolean, so the buttons were
+            // appended to a boolean and the whole method failed to verify — the app crashed on
+            // opening a story's options. The options list is instead taken from the toArray call
+            // that builds the returned array, which is the list these buttons belong to by
+            // definition.
             SelfStoryAddStoryButtonFingerprint.method.apply {
-                instructions.filter { it.opcode == Opcode.IF_EQZ }.first { it ->
-                    val index = it.location.index
-                    val nextOpcode = getInstruction(index + 1).opcode
-                    if (nextOpcode == Opcode.IGET_OBJECT) {
-                        val arrayMoveResultObjectIndex = index - 1
-                        val arrayListRegister = getInstruction(arrayMoveResultObjectIndex).registersUsed[0]
-
-                        addInstructions(
-                            arrayMoveResultObjectIndex + 1,
-                            """
-                            invoke-static {v$arrayListRegister},$STORY_BUTTON_EXTENSION_CLASS ->addButtons(Ljava/util/ArrayList;)Ljava/util/ArrayList;
-                            move-result-object v$arrayListRegister
-                            """.trimIndent(),
-                        )
-                        true
-                    } else {
-                        false
+                val toArrayIndex =
+                    instructions.indexOfFirst { instruction ->
+                        instruction.opcode == Opcode.INVOKE_VIRTUAL &&
+                            instruction.getReference<MethodReference>()?.name == "toArray"
                     }
-                }
+                if (toArrayIndex < 0) throw PatchException("Could not find the story options list")
+
+                val arrayListRegister = getInstruction(toArrayIndex).registersUsed[0]
+                addInstructions(
+                    toArrayIndex,
+                    """
+                    invoke-static {v$arrayListRegister},$STORY_BUTTON_EXTENSION_CLASS ->addButtons(Ljava/util/ArrayList;)Ljava/util/ArrayList;
+                    move-result-object v$arrayListRegister
+                    """.trimIndent(),
+                )
             }
 
             // Add button on story bottom sheet.

@@ -17,6 +17,11 @@ internal object GetUniversalIdHelperClassExtension : Fingerprint(
     definingClass = ITEM_CLASS_DESCRIPTOR,
 )
 
+internal object GetUniversalIdHelperMethodExtension : Fingerprint(
+    name = "getUniversalIdHelperMethodName",
+    definingClass = ITEM_CLASS_DESCRIPTOR,
+)
+
 internal object GetQuickExperimentHelperClassExtension : Fingerprint(
     name = "getQuickExperimentHelperClass",
     definingClass = EXTENSION_CLASS_DESCRIPTOR,

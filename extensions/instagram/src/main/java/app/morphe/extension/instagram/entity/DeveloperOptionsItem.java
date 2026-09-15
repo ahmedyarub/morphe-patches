@@ -35,17 +35,40 @@ public class DeveloperOptionsItem {
         this.paramId = this.getParamId(mobileConfigSpecifier);
     }
 
+    /**
+     * Whether the app's universal id helper could be reached. Resolved once: this runs on every
+     * flag the app checks, so a build where the helper has moved would otherwise throw, log a
+     * stack trace and walk the reflection path thousands of times a minute.
+     */
+    private static Boolean universalIdHelperUsable;
+
     private Class<?> getUniversalIdHelperClass() throws Exception {
         return Class.forName("X.0B3D");
     }
 
+    /**
+     * Name of the helper method, rewritten by the patch alongside the class above. piko hardcodes
+     * it at the call site, where nothing can reach it.
+     */
+    private String getUniversalIdHelperMethodName() {
+        return "A00";
+    }
+
     public String getUniversalId(long mobileConfigSpecifier) {
+        if (Boolean.FALSE.equals(universalIdHelperUsable)) {
+            return "0";
+        }
         try {
             Class<?> universalIdHelperClass = this.getUniversalIdHelperClass();
-            int universalId = (int) new Entity().getMethod(universalIdHelperClass, "A00", new Class[]{long.class}, mobileConfigSpecifier);
+            int universalId = (int) new Entity().getMethod(
+                    universalIdHelperClass, this.getUniversalIdHelperMethodName(), new Class[]{long.class}, mobileConfigSpecifier);
+            universalIdHelperUsable = Boolean.TRUE;
             return String.valueOf(universalId);
         } catch (Exception e){
-            PikoUtils.logger(e);
+            if (universalIdHelperUsable == null) {
+                universalIdHelperUsable = Boolean.FALSE;
+                PikoUtils.logger(e);
+            }
         }
         return "0";
     }

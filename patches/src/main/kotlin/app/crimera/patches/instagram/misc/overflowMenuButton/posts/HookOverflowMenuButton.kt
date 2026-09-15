@@ -63,8 +63,12 @@ val hookOverflowMenuButton =
                             checkCastIndex = indexOfFirstInstruction(index, Opcode.CHECK_CAST)
                             checkCastRegister = getInstruction(checkCastIndex).registersUsed[0]
                             true
+                        } else {
+                            // piko discards the match and keeps scanning, so the
+                            // registers end up coming from the last ArrayList in the
+                            // method rather than the one paired with the check-cast.
+                            false
                         }
-                        false
                     }
                 }
 

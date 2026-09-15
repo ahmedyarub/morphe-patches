@@ -10,6 +10,11 @@ import app.crimera.patches.instagram.utils.Constants.COMPATIBILITY_INSTAGRAM
 import app.crimera.patches.instagram.utils.Constants.HOOK_FLAGS_DESCRIPTOR
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.crimera.patches.instagram.entity.developerOptions.GetUniversalIdHelperClassExtension
+import app.crimera.patches.instagram.entity.developerOptions.GetUniversalIdHelperMethodExtension
+import app.crimera.utils.changeFirstString
+import app.crimera.utils.classNameToExtension
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import com.android.tools.smali.dexlib2.AccessFlags
 
@@ -26,6 +31,35 @@ val hookFlagsPatch =
         compatibleWith(COMPATIBILITY_INSTAGRAM)
 
         execute {
+            // The helper that turns a mobile config specifier into its universal id. Without it
+            // every override keyed on a universal id silently misses, and the extension throws on
+            // each flag the app checks — which is constantly.
+            //
+            // piko reads the class from a method whose anchor strings 446 pools away, and hardcodes
+            // the method name, so both are found here by shape. One class carries the specifier
+            // packing helpers, recognisable by the (int, int, int, int, boolean, boolean) -> long
+            // among them, and the universal id is the (long) -> int on that same class. Resolves to
+            // LX/003s; on 439 and LX/03w0; on 446.
+            val specifierHelperClass =
+                classDefByOrNull { classDef ->
+                    classDef.methods.any { method ->
+                        AccessFlags.STATIC.isSet(method.accessFlags) &&
+                            method.returnType == "J" &&
+                            method.parameterTypes.map { it.toString() } == listOf("I", "I", "I", "I", "Z", "Z")
+                    }
+                } ?: throw PatchException("Could not find the mobile config specifier helpers")
+
+            val universalIdMethod =
+                specifierHelperClass.methods.singleOrNull { method ->
+                    AccessFlags.STATIC.isSet(method.accessFlags) &&
+                        method.returnType == "I" &&
+                        method.parameterTypes.map { it.toString() } == listOf("J")
+                } ?: throw PatchException("Could not identify the universal id helper method")
+
+            GetUniversalIdHelperClassExtension.changeFirstString(classNameToExtension(specifierHelperClass.type))
+            GetUniversalIdHelperMethodExtension.changeFirstString(universalIdMethod.name)
+
+
             StringFlagCheckMethodFingerprint.apply {
                 val methods = classDef.methods
 
