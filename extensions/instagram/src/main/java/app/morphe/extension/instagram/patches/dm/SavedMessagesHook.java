@@ -46,6 +46,62 @@ public class SavedMessagesHook {
         if (threadId != null && !threadId.isEmpty()) sCurrentThreadId = threadId;
     }
 
+    // --- Hook 4 (open-thread id) --------------------------------------------------------
+    // The chat action-bar builder holds the thread only as an obfuscated view model, and the
+    // chain viewModel -> descriptor -> DirectThreadKey -> threadId needs three scratch
+    // registers the builder does not always have below v16 (iget-object/invoke-static encode
+    // their registers in 4 bits). So the patch passes the view model as a single Object and
+    // the chain is walked here, with every obfuscated name baked in at patch time.
+
+    private static String openThreadDescriptorField() { return "descriptorField"; }
+
+    private static String openThreadConverterClass() { return "converterClass"; }
+
+    private static String openThreadConverterMethod() { return "converterMethod"; }
+
+    private static String openThreadIdField() { return "threadIdField"; }
+
+    private static java.lang.reflect.Field findField(Class<?> type, String name) {
+        for (Class<?> c = type; c != null && c != Object.class; c = c.getSuperclass()) {
+            try {
+                java.lang.reflect.Field f = c.getDeclaredField(name);
+                f.setAccessible(true);
+                return f;
+            } catch (NoSuchFieldException ignored) {}
+        }
+        return null;
+    }
+
+    /** Hook 4: remember which thread is on screen, given the action bar's view model. */
+    public static void noteOpenThread(Object viewModel) {
+        if (viewModel == null) return;
+        try {
+            java.lang.reflect.Field descriptorField =
+                    findField(viewModel.getClass(), openThreadDescriptorField());
+            if (descriptorField == null) return;
+            Object descriptor = descriptorField.get(viewModel);
+            if (descriptor == null) return;
+
+            Object threadKey = null;
+            String converterName = openThreadConverterMethod();
+            for (java.lang.reflect.Method m :
+                    Class.forName(openThreadConverterClass()).getDeclaredMethods()) {
+                if (!m.getName().equals(converterName)) continue;
+                Class<?>[] params = m.getParameterTypes();
+                if (params.length != 1 || !params[0].isInstance(descriptor)) continue;
+                m.setAccessible(true);
+                threadKey = m.invoke(null, descriptor);
+                break;
+            }
+            if (threadKey == null) return;
+
+            java.lang.reflect.Field idField = findField(threadKey.getClass(), openThreadIdField());
+            if (idField == null) return;
+            Object threadId = idField.get(threadKey);
+            if (threadId instanceof String) noteOpenThreadId((String) threadId);
+        } catch (Throwable ignored) {}
+    }
+
     /** Hook 6: harvest participant id→username from the thread deserializer's user list. */
     public static void noteThreadUsers(final java.util.List<?> users) {
         if (users == null || users.isEmpty()) return;

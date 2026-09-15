@@ -16,6 +16,11 @@ internal object GetAudioMediaExtension : Fingerprint(
     definingClass = EXTENSION_CLASS_DESCRIPTOR,
 )
 
+internal object GetMessageTypeExtension : Fingerprint(
+    name = "getMessageType",
+    definingClass = EXTENSION_CLASS_DESCRIPTOR,
+)
+
 internal object StellaDirectMessagingServiceAudioRelatedFingerprint : Fingerprint(
     strings = listOf("prepare audio source link"),
 )
