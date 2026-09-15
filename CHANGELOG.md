@@ -1,3 +1,10 @@
+## [1.5.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.5.0...v1.5.1) (2026-09-15)
+
+### 🐛 Bug Fixes
+
+* **Instagram:** Match the image mapper on the build Play delivers ([4df9f94](https://github.com/ahmedyarub/morphe-patches/commit/4df9f94386d8ca526f86aab54647ba351fb922fc))
+* **Instagram:** Match the image mapper on the build Play delivers ([b0bf777](https://github.com/ahmedyarub/morphe-patches/commit/b0bf77702b7ecd12e3fca2091c630c472b2fbd2d))
+
 ## [1.5.1-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.5.0...v1.5.1-dev.1) (2026-09-15)
 
 ### 🐛 Bug Fixes
