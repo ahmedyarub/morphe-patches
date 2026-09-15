@@ -40,9 +40,19 @@ public class Entity {
     }
 
     public Object getField(Class cls, Object clsObj, String fieldName) throws Exception {
-        Field field = cls.getDeclaredField(fieldName);
-        field.setAccessible(true);
-        return (Object) field.get(clsObj);
+        // getDeclaredField only searches the exact class, but Instagram declares most of a
+        // direct message's fields on its base class, so walk up before giving up.
+        NoSuchFieldException notFound = null;
+        for (Class<?> c = cls; c != null && c != Object.class; c = c.getSuperclass()) {
+            try {
+                Field field = c.getDeclaredField(fieldName);
+                field.setAccessible(true);
+                return (Object) field.get(clsObj);
+            } catch (NoSuchFieldException e) {
+                if (notFound == null) notFound = e;
+            }
+        }
+        throw notFound != null ? notFound : new NoSuchFieldException(fieldName);
     }
 
     public Object getField(Object clsObj, String fieldName) throws Exception {
@@ -51,6 +61,21 @@ public class Entity {
 
     public Object getField(String fieldName) throws Exception {
         return getField(this.obj, fieldName);
+    }
+
+    /**
+     * Reads a field from the class that declares it. Instagram subclasses redeclare field names
+     * that already exist on their base with a different type, so a lookup by name alone can find
+     * the wrong field and silently read null.
+     */
+    public Object getFieldIn(String declaringClassName, String fieldName) throws Exception {
+        Field field = Class.forName(declaringClassName).getDeclaredField(fieldName);
+        field.setAccessible(true);
+        return field.get(this.obj);
+    }
+
+    public Entity getFieldAsEntityIn(String declaringClassName, String fieldName) throws Exception {
+        return new Entity(getFieldIn(declaringClassName, fieldName));
     }
 
     public Entity getFieldAsEntity(String fieldName) throws Exception {
