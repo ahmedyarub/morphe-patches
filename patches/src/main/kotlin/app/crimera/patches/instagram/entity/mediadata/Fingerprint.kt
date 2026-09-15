@@ -129,9 +129,15 @@ internal object InstagramMainActivityNotificationRelatedFingerprint : Fingerprin
  * The mapper that turns an image info object back into its json form, and so names every getter
  * on it next to the key it belongs to.
  */
+/**
+ * XDTImageCandidate is deliberately not required: R8 keeps that literal in the mapper on some
+ * builds and hoists it into ExtendedImageUrl on others, so requiring it matched the APKMirror
+ * bundle but not the build Play delivers. The remaining three keys plus the Map return type
+ * identify the mapper uniquely on both.
+ */
 internal object ImageInfoMapperFingerprint : Fingerprint(
     returnType = "Ljava/util/Map;",
-    strings = listOf("additional_candidates", "XDTImageCandidate", "candidates", "scrubber_spritesheet_info_candidates"),
+    strings = listOf("additional_candidates", "candidates", "scrubber_spritesheet_info_candidates"),
 )
 
 internal object AslSessionRelatedFingerprint : Fingerprint(
