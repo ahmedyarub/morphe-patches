@@ -18,7 +18,14 @@ public class UserData extends Entity {
     }
 
     private Object getAdditionalUserInfo() throws Exception {
-        return super.getField(this.obj, "fieldName");
+        try {
+            Object additionalUserInfo = super.getField(this.obj, "fieldName");
+            if (additionalUserInfo != null) return additionalUserInfo;
+        } catch (Exception ignored) {
+            // 446 folded the user dict into User itself, so there is no wrapper field to hop
+            // through and the getters sit directly on the user object.
+        }
+        return this.obj;
     }
 
     public Boolean isVerified() throws Exception {

@@ -22,6 +22,7 @@ import app.crimera.patches.instagram.misc.extension.sharedExtensionPatch
 import app.crimera.patches.instagram.misc.stories.handleStoryButtonPatch
 import app.crimera.patches.instagram.utils.Constants.COMPATIBILITY_INSTAGRAM
 import app.crimera.patches.instagram.utils.Constants.DOWNLOAD_DESCRIPTOR
+import app.crimera.patches.instagram.entity.userdata.userDataEntity
 import app.crimera.patches.instagram.utils.addFlags
 import app.crimera.patches.instagram.utils.enableSettings
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
@@ -39,6 +40,7 @@ val downloadMediaPatch =
             sharedExtensionPatch,
             instagramDialogBoxEntity,
             mediaDataEntity,
+            userDataEntity,
             videoDataEntity,
             originalSoundDataIntfEntity,
             trackDataIntfEntity,

@@ -13,6 +13,7 @@ import app.crimera.patches.instagram.entity.decoder.USER_MODEL_CLASS_NAME
 import app.crimera.patches.instagram.entity.decoder.decoderEntity
 import app.crimera.patches.instagram.utils.Constants.MUSIC_INFO_CLASS
 import app.crimera.utils.changeFirstString
+import app.crimera.utils.cacheFieldOrNull
 import app.crimera.utils.changeStringAt
 import app.crimera.utils.classNameToExtension
 import app.crimera.utils.fieldExtractor
