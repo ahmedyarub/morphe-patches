@@ -53,7 +53,7 @@ public class AddReelButton {
         }
     }
 
-    private static void addDownloadButton(Context context, Object helperObject, Object mediaObject, int currentMediaIndex){
+    public static void addDownloadButton(Context context, Object helperObject, Object mediaObject, int currentMediaIndex){
         String icon = UI.DRAWABLE_DOWNLOAD_ICON;
         ReelButton reelButton = new DownloadButton(context, mediaObject, currentMediaIndex);
         String DOWNLOAD_BUTTON_TEXT = str("piko_download_options");
@@ -97,6 +97,80 @@ public class AddReelButton {
     }
 
     // Called from hook — passes the real current carousel index.
+    /*
+     * The reel controller hands its values over one at a time.
+     *
+     * Only move-object/from16 and invoke-static/range can name a register above v15, and this
+     * controller's free registers are all above it. So the patch cannot read a field or pass
+     * several arguments in one call: it copies one value at a time into a single scratch
+     * register and stashes it here, then calls the hook with no arguments at all. The field
+     * reads it can no longer do in bytecode happen below instead, by reflection, against names
+     * the patch writes into the placeholders.
+     */
+    private static Object stashedSelf;
+    private static Object stashedController;
+    private static Object stashedMedia;
+    private static Object stashedHelper;
+
+    public static void stashReelSelf(Object value) { stashedSelf = value; }
+
+    public static void stashReelController(Object value) { stashedController = value; }
+
+    public static void stashReelMedia(Object value) { stashedMedia = value; }
+
+    public static void stashReelHelper(Object value) { stashedHelper = value; }
+
+    /** Field on the reel controller holding the activity. Rewritten by the patch. */
+    private static String activityFieldName() { return "fieldName"; }
+
+    /** Field holding the object that carries the carousel index. Rewritten by the patch. */
+    private static String mediaExtraFieldName() { return "fieldName"; }
+
+    /** The carousel index field on that object. Rewritten by the patch. */
+    private static String currentMediaFieldName() { return "fieldName"; }
+
+    public static void runReelHook() {
+        try {
+            Entity entity = new Entity();
+            Context context = (Context) entity.getField(stashedSelf, activityFieldName());
+            Object mediaExtra = entity.getField(stashedController, mediaExtraFieldName());
+            int currentMediaIndex = (Integer) entity.getField(mediaExtra, currentMediaFieldName());
+
+            AddReelButton.includeCustomReelOverflowButtons(
+                    context, stashedHelper, stashedMedia, currentMediaIndex);
+        } catch (Exception e) {
+            Logger.printException(() -> "Error at runReelHook", e);
+        }
+    }
+
+    /**
+     * One sheet's worth of added rows, keyed on the sheet builder the app hands us.
+     *
+     * The reel menu calls its per-option method once for every row it is about to draw, so the
+     * download row is added on the first of those calls and skipped for the rest. A new sheet
+     * brings a new builder instance, which is what makes it appear again next time.
+     */
+    private static Object lastSheetHelper;
+
+    /** Field on the reel menu helper holding the media. Rewritten by the patch. */
+    private static String reelMediaFieldName() { return "fieldName"; }
+
+    public static void addReelMenuDownloadRow(Object moreOptionsHelper, Context context, Object sheetHelper) {
+        try {
+            if (sheetHelper == null || sheetHelper == lastSheetHelper) return;
+            lastSheetHelper = sheetHelper;
+
+            if (!Pref.enableDownload()) return;
+
+            Object media = new Entity().getField(moreOptionsHelper, reelMediaFieldName());
+            if (media == null) return;
+
+            AddReelButton.addDownloadButton(context, sheetHelper, media, 0);
+        } catch (Exception e) {
+            Logger.printException(() -> "Error at addReelMenuDownloadRow", e);
+        }
+    }
+
     public static void includeCustomReelOverflowButtons(Context context, Object helperObject, Object mediaObject, int currentMediaIndex){
         if(Pref.pikoDebug()){
             AddReelButton.addDebugButton(context, helperObject, mediaObject, currentMediaIndex);

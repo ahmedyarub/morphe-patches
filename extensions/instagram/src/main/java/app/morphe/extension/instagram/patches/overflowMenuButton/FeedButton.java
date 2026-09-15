@@ -12,6 +12,7 @@ import static app.morphe.extension.instagram.utils.IgStr.str;
 import java.util.ArrayList;
 import java.util.List;
 import android.content.Context;
+import android.view.View;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -28,6 +29,7 @@ import app.morphe.extension.instagram.utils.Pref;
 import app.morphe.extension.instagram.settings.SettingsStatus;
 import app.morphe.extension.instagram.entity.Entity;
 import app.morphe.extension.instagram.entity.MediaData;
+import app.morphe.extension.instagram.patches.overflowMenuButton.reels.AddReelButton;
 import app.morphe.extension.instagram.constants.UI;
 import app.morphe.extension.instagram.patches.download.DownloadUtils;
 import app.morphe.extension.instagram.patches.feed.MoreOptionsOnPostPatch;
@@ -155,28 +157,83 @@ public class FeedButton {
         }
     }
 
-    /** The option whose row carries the download action, since an added row is never drawn. */
-    private static final String DOWNLOAD_STAND_IN = "SAVE";
+    /*
+     * The feed sheet, added to the same way the reel sheet is.
+     *
+     * 446 draws only the options it recognises, so the row this bundle used to add to the option
+     * list was assembled correctly and then dropped at render time. The sheet builds itself with
+     * the same helper the reel menu uses, which takes a label, an icon and a listener outright, so
+     * the row goes in there instead and there is nothing left to recognise.
+     *
+     * The builder is reached from a method whose frame is almost all parameters, above the range
+     * a four bit register field can name, so each value arrives in its own call.
+     */
+    private static Object stashedFeedSheet;
+    private static Object stashedFeedMedia;
+    private static Object stashedFeedExtra;
+    private static Object stashedFeedHolder;
+    private static Object lastFeedSheet;
+
+    public static void stashFeedSheet(Object value) { stashedFeedSheet = value; }
+
+    public static void stashFeedMedia(Object value) { stashedFeedMedia = value; }
+
+    public static void stashFeedExtra(Object value) { stashedFeedExtra = value; }
+
+    public static void stashFeedHolder(Object value) { stashedFeedHolder = value; }
+
+    /** Fragment field on the sheet owner, for a themed context. Rewritten by the patch. */
+    private static String feedFragmentFieldName() { return "fieldName"; }
+
+    /** The carousel index field. Rewritten by the patch. */
+    private static String feedCurrentMediaFieldName() { return "fieldName"; }
 
     /**
-     * Whether this row is the one standing in for the download action.
+     * A context for the sheet, from whatever the call site had to hand.
      *
-     * 446's action sheet draws only the options it recognises — it resolves each row's label and
-     * icon from the option itself rather than from the row — so an option a patch invents is
-     * dropped at render time no matter how correctly it was added to the list. The download action
-     * is therefore attached to an option the app already draws, at the cost of that option's own
-     * behaviour. Save is the one given up.
+     * The feed builds this sheet from more than one place: some pass a view, others an object
+     * holding the fragment. Both are accepted so a single hook body serves every site.
      */
-    private static boolean isDownloadStandIn(MediaOption$Option pressedButton){
-        return SettingsStatus.downloadMedia
-                && Pref.enableDownload()
-                && DOWNLOAD_STAND_IN.equals(pressedButton.name());
+    private static Context contextFrom(Object source) {
+        try {
+            if (source == null) return null;
+            if (source instanceof View) return ((View) source).getContext();
+
+            Object fragment = new Entity().getField(source, feedFragmentFieldName());
+            if (fragment == null) return null;
+            // getMethod, not the extension's reflection helper: requireContext is declared on
+            // Fragment and the field holds a subclass, so a declared-method lookup misses it.
+            return (Context) fragment.getClass().getMethod("requireContext").invoke(fragment);
+        } catch (Exception e) {
+            Logger.printException(() -> "Could not resolve a context for the feed sheet", e);
+            return null;
+        }
+    }
+
+    public static void addFeedMenuDownloadRow() {
+        try {
+            if (stashedFeedSheet == null || stashedFeedSheet == lastFeedSheet) return;
+            lastFeedSheet = stashedFeedSheet;
+
+            if (!Pref.enableDownload()) return;
+
+            Entity entity = new Entity();
+            Context context = contextFrom(stashedFeedHolder);
+            if (context == null) return;
+
+            int currentMediaIndex = 0;
+            if (stashedFeedExtra != null) {
+                Object index = entity.getField(stashedFeedExtra, feedCurrentMediaFieldName());
+                if (index instanceof Integer) currentMediaIndex = (Integer) index;
+            }
+
+            AddReelButton.addDownloadButton(context, stashedFeedSheet, stashedFeedMedia, currentMediaIndex);
+        } catch (Exception e) {
+            Logger.printException(() -> "Error at addFeedMenuDownloadRow", e);
+        }
     }
 
     public static boolean isCustomButtonPressed(MediaOption$Option pressedButton){
-        if (isDownloadStandIn(pressedButton)) {
-            return true;
-        }
         return (
                 pressedButton.equals(MediaOption$Option.PIKO_DEBUG) ||
                 (SettingsStatus.downloadMedia && pressedButton.equals(MediaOption$Option.PIKO_DOWNLOAD)) ||
@@ -190,8 +247,7 @@ public class FeedButton {
             if(pressedButton.equals(MediaOption$Option.PIKO_DEBUG)) {
                 ObjectBrowser.browseObject(context, new MediaData(mediaObject, userSession));
 
-            } else if (isDownloadStandIn(pressedButton)
-                    || (SettingsStatus.downloadMedia && pressedButton.equals(MediaOption$Option.PIKO_DOWNLOAD))) {
+            } else if (SettingsStatus.downloadMedia && pressedButton.equals(MediaOption$Option.PIKO_DOWNLOAD)) {
                 DownloadUtils.downloadPost(context, userSession, mediaObject, currentMediaIndex);
 
             } else if (SettingsStatus.moreOptionsOnPost && pressedButton.equals(MediaOption$Option.PIKO_MORE_POST_OPTION)) {

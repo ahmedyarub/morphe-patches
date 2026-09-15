@@ -16,6 +16,7 @@ import app.crimera.patches.instagram.misc.directMessage.saveAllMessages.saveAllM
 import app.crimera.patches.instagram.misc.hookFlags.hookFlagsPatch
 import app.crimera.patches.instagram.misc.overflowMenuButton.posts.addOverflowMenuButtonAttributes
 import app.crimera.patches.instagram.misc.overflowMenuButton.posts.debugOverflowButton.debugOverflowMenuButtonPatch
+import app.crimera.patches.instagram.misc.overflowMenuButton.posts.hookFeedSheetPatch
 import app.crimera.patches.instagram.misc.overflowMenuButton.posts.hookOverflowMenuButton
 import app.crimera.patches.instagram.misc.overflowMenuButton.reels.hookReelOverflowMenuButton
 import app.crimera.patches.instagram.misc.extension.sharedExtensionPatch
@@ -50,6 +51,7 @@ val downloadMediaPatch =
             hookFlagsPatch,
             saveAllMessagesPatch,
             hookOverflowMenuButton,
+            hookFeedSheetPatch,
             debugOverflowMenuButtonPatch,
             hookReelOverflowMenuButton,
         )
