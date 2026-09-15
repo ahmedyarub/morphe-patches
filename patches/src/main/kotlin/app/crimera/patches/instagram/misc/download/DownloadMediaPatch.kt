@@ -33,6 +33,9 @@ import app.morphe.util.getReference
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import app.crimera.patches.instagram.entity.messageInfoEntity.GetMessageTypeExtension
+import app.crimera.utils.changeFirstString
+import app.crimera.utils.changeStringAt
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.smali.ExternalLabel
@@ -96,6 +99,39 @@ val downloadMediaPatch =
                                 reference.parameterTypes.map { type -> type.toString() }
                                     .containsAll(listOf(saverClass, holderClass))
                         } ?: throw PatchException("The media saver has no save routine taking the message holder")
+
+                // The extension switches on the message's wire type ("media", "voice_media", ...).
+                // The saver already resolves that enum for its holder, so take the accessor it
+                // calls: the field that accessor reads is the type field, and the enum's single
+                // instance field is the wire name. Resolved this way rather than by picking a
+                // field of the enum's type — the message base class declares two of those.
+                val itemTypeAccessor =
+                    holderBuilder.implementation!!
+                        .instructions
+                        .mapNotNull { it.getReference<MethodReference>() }
+                        .firstOrNull { reference ->
+                            reference.parameterTypes.size == 1 &&
+                                classDefByOrNull(reference.returnType)?.let { returned ->
+                                    returned.superclass == "Ljava/lang/Enum;" &&
+                                        returned.fields.count { field -> !AccessFlags.STATIC.isSet(field.accessFlags) } == 1
+                                } == true
+                        } ?: throw PatchException("The media saver never resolves the message type")
+
+                val itemTypeField =
+                    classDefBy(itemTypeAccessor.definingClass)
+                        .methods
+                        .first { it.name == itemTypeAccessor.name && it.parameterTypes.toList() == itemTypeAccessor.parameterTypes.toList() }
+                        .implementation!!
+                        .instructions
+                        .first { it.opcode == Opcode.IGET_OBJECT }
+                        .getReference<FieldReference>()!!
+                val itemTypeNameField =
+                    classDefBy(itemTypeAccessor.returnType)
+                        .fields
+                        .single { !AccessFlags.STATIC.isSet(it.accessFlags) }
+
+                GetMessageTypeExtension.changeFirstString(itemTypeField.name)
+                GetMessageTypeExtension.changeStringAt(1, itemTypeNameField.name)
 
                 val parameterTypes = saveRoutine.parameterTypes.map { it.toString() }
                 val saverParameter = parameterTypes.indexOf(saverClass)

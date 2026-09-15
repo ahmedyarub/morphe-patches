@@ -16,20 +16,20 @@ public class MessageInfo extends Entity {
         this.obj = obj;
     }
 
-    private Entity messageDataInfo() throws Exception{
-        return super.getFieldAsEntity("A00");
-    }
-
+    /**
+     * The wire name of the message type ("media", "raven_media", "voice_media", ...). It lives on
+     * an enum hung off the message; both field names are rewritten at patch time.
+     */
     public String getMessageType() throws Exception {
-        Entity messageTypeDetailEntity = super.getFieldAsEntity("A01");
-        return (String) messageTypeDetailEntity.getField("A00");
+        Entity messageTypeDetailEntity = super.getFieldAsEntity("itemTypeField");
+        return (String) messageTypeDetailEntity.getField("itemTypeNameField");
     }
 
     public MediaData getAudioMedia() throws Exception {
-        Entity messageTypeDetailEntity = this.messageDataInfo();
-        Entity audioDataEntity = messageTypeDetailEntity.getFieldAsEntity("A0O");
+        // The hook passes the message itself, so the audio field is read straight off it.
+        Entity audioDataEntity = super.getFieldAsEntity("audioField");
         if(audioDataEntity!=null){
-            Object mediaData = audioDataEntity.getField("A02");
+            Object mediaData = audioDataEntity.getField("audioMediaField");
             if(mediaData!=null)
                 return new MediaData(mediaData);
         }
