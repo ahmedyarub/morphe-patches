@@ -24,12 +24,21 @@ public final class IgStr {
             Context ctx = baseContext();
             Integer cached = idCache.get(name);
             int id = cached != null ? cached : ctx.getResources().getIdentifier(name, "string", ctx.getPackageName());
-            if (id == 0) return name;
+            if (id == 0) return fallback(name);
             if (cached == null) idCache.put(name, id);
             return ctx.getString(id);
         } catch (Exception e) {
-            return name;
+            return fallback(name);
         }
+    }
+
+    /**
+     * English text for a key the app has no resource for, or the key itself when even that is
+     * unknown — callers treat an unchanged key as "not found".
+     */
+    private static String fallback(String name) {
+        String text = IgStrDefaults.BY_NAME.get(name);
+        return text != null ? text : name;
     }
 
     public static String str(String name, Object... args) {
