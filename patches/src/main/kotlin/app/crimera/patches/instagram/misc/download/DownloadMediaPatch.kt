@@ -28,8 +28,15 @@ import app.crimera.patches.instagram.utils.addFlags
 import app.crimera.patches.instagram.utils.enableSettings
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
+import app.crimera.patches.instagram.entity.messageInfoEntity.directMessageClass
+import app.morphe.util.getReference
+import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.reference.FieldReference
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.smali.ExternalLabel
+import com.android.tools.smali.dexlib2.AccessFlags
 
 @Suppress("unused")
 val downloadMediaPatch =
@@ -61,19 +68,63 @@ val downloadMediaPatch =
 
             addOverflowMenuButtonAttributes("PIKO_DOWNLOAD", "downloadOverflowButton")
 
-            // DM media downloader.
+            // DM media downloader. The saver hands the message to its save routine wrapped in a
+            // holder, so the hook has to unwrap it before the extension can read the message type.
             GetDirectThreadMediaSaverModuleNameFingerprint.apply {
-
+                val saverClass = classDef.type
                 val appActivityField = classDef.fields.first { it.type == "Landroid/app/Activity;" }
 
+                // Where the saver builds that holder. Its iput names both the holder class and the
+                // field the message lands in, and the static method it is then handed to is the
+                // funnel every save path goes through (the permission gate calls it too).
+                val holderStore =
+                    classDef.methods.firstNotNullOfOrNull { candidate ->
+                        candidate.implementation?.instructions?.firstOrNull { instruction ->
+                            instruction.opcode == Opcode.IPUT_OBJECT &&
+                                instruction.getReference<FieldReference>()?.type == directMessageClass
+                        }?.let { candidate to it.getReference<FieldReference>()!! }
+                    } ?: throw PatchException("The media saver never stores a direct message")
+                val (holderBuilder, messageField) = holderStore
+                val holderClass = messageField.definingClass
+
+                val saveRoutine =
+                    holderBuilder.implementation!!
+                        .instructions
+                        .mapNotNull { it.getReference<MethodReference>() }
+                        .firstOrNull { reference ->
+                            reference.definingClass == saverClass && reference.returnType == "V" &&
+                                reference.parameterTypes.map { type -> type.toString() }
+                                    .containsAll(listOf(saverClass, holderClass))
+                        } ?: throw PatchException("The media saver has no save routine taking the message holder")
+
+                val parameterTypes = saveRoutine.parameterTypes.map { it.toString() }
+                val saverParameter = parameterTypes.indexOf(saverClass)
+                val holderParameter = parameterTypes.indexOf(holderClass)
+
                 classDef.methods
-                    .first { it.returnType == "V" && it.name != "<init>" }
+                    .first { it.name == saveRoutine.name && it.parameterTypes.map { type -> type.toString() } == parameterTypes }
                     .apply {
+                        // p registers sit at the top of the frame, so on a wide method they are
+                        // above v15 — and iget-object / move-object encode their registers in
+                        // 4 bits, which the assembler drops silently. Stage them through v0/v1,
+                        // which are free at entry (the local count is checked below).
+                        val parameterRegisters =
+                            parameterTypes.sumOf { type -> if (type == "J" || type == "D") 2 else 1 } +
+                                if (AccessFlags.STATIC.isSet(accessFlags)) 0 else 1
+                        val localRegisters = implementation!!.registerCount - parameterRegisters
+                        if (localRegisters < 2) {
+                            throw PatchException(
+                                "The DM save routine $saverClass->$name has no scratch registers",
+                            )
+                        }
+
                         addInstructionsWithLabels(
                             0,
                             """
-                            iget-object v0, p1, $appActivityField
-                            move-object v1, p2
+                            move-object/from16 v0, p$saverParameter
+                            iget-object v0, v0, $saverClass->${appActivityField.name}:Landroid/app/Activity;
+                            move-object/from16 v1, p$holderParameter
+                            iget-object v1, v1, $holderClass->${messageField.name}:$directMessageClass
                             invoke-static {v0, v1}, $DOWNLOAD_DESCRIPTOR/MessageUtils;->messageDownloadCheck(Landroid/content/Context;Ljava/lang/Object;)Z
                             move-result v1
                             if-nez v1, :piko

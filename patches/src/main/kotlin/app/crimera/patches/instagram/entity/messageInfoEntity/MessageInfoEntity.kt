@@ -15,6 +15,12 @@ import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.util.indexOfFirstInstruction
 import com.android.tools.smali.dexlib2.Opcode
 
+/**
+ * Descriptor of the direct-message item class, resolved from the audio anchor below. Other
+ * patches (the DM download hook) need it to tell the message apart from its wrappers.
+ */
+internal var directMessageClass: String = "Lcom/instagram/model/direct/DirectMessage;"
+
 val messageInfoEntity =
     bytecodePatch(
         description = "This patch is used for decoding obfuscated code of message info",
@@ -26,6 +32,7 @@ val messageInfoEntity =
                     val audioDataIGetObjectIndex = indexOfFirstInstruction(strIndex, Opcode.IGET_OBJECT)
                     val iGetObjectMetaData = getInstruction(audioDataIGetObjectIndex).fieldExtractor()
                     GetAudioMediaExtension.changeFirstString(iGetObjectMetaData.name)
+                    directMessageClass = extensionToClassName(iGetObjectMetaData.definingClass)
 
                     mutableClassDefBy(extensionToClassName(iGetObjectMetaData.returnType))
                         .methods
