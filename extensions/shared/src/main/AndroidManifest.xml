@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  This manifest is never shipped: extensions compile to a DEX that is merged into the host app,
-  which supplies the manifest. Instagram already declares POST_NOTIFICATIONS, so the download
-  notification MediaDownloader posts is permitted at runtime; lint only sees this empty stub.
+  Never shipped: extensions compile to a DEX merged into the host app, which supplies the real
+  manifest. Declared here only so lint can see that the download notification MediaDownloader
+  posts is permitted — Instagram itself holds POST_NOTIFICATIONS.
 -->
-<manifest xmlns:tools="http://schemas.android.com/tools"
-    tools:ignore="NotificationPermission" />
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+</manifest>

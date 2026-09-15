@@ -7,6 +7,7 @@
 
 package app.morphe.extension.instagram.entity;
 
+import android.animation.ValueAnimator;
 import android.widget.FrameLayout;
 import android.content.Context;
 import android.view.View;
@@ -83,8 +84,8 @@ public class InstagramButton extends FrameLayout {
         IgdsButton button = getIgdsButton();
         ObjectAnimator objectAnimatorOfFloat = ObjectAnimator.ofFloat(button, "alpha", 0.6f, 1.0f);
         objectAnimatorOfFloat.setDuration(1000L);
-        objectAnimatorOfFloat.setRepeatCount(-1);
-        objectAnimatorOfFloat.setRepeatMode(2);
+        objectAnimatorOfFloat.setRepeatCount(ValueAnimator.INFINITE);
+        objectAnimatorOfFloat.setRepeatMode(ValueAnimator.REVERSE);
         objectAnimatorOfFloat.start();
 
     }

@@ -6,6 +6,7 @@
 
 package app.morphe.extension.instagram.patches.dm;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 
@@ -307,6 +308,8 @@ public class SavedMessagesHook {
         }
     }
 
+    // Instagram declares POST_NOTIFICATIONS; this extension has no manifest of its own.
+    @SuppressLint("NotificationPermission")
     private static void notifyDeletion(String sender, String content, String type) {
         try {
             Context ctx = PikoUtils.getContext();

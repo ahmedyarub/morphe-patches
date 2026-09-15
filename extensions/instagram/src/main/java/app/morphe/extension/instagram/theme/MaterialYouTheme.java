@@ -5,6 +5,7 @@
  */
 package app.morphe.extension.instagram.theme;
 
+import androidx.annotation.RequiresApi;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
@@ -352,6 +353,9 @@ public final class MaterialYouTheme {
         );
     }
 
+    // Both of these reach MaterialYouThemeAPI31, which is @RequiresApi(31). Their only callers,
+    // applyToActivity and requestNativeThemeChange, already return early below 31.
+    @RequiresApi(31)
     private static ThemeMode availableRequestedModeOrFallback(
             ThemeMode mode,
             boolean instagramDark
@@ -361,10 +365,11 @@ public final class MaterialYouTheme {
                 instagramDark,
                 isMaterialYouAvailable(),
                 isAmoledAvailable(),
-                Build.VERSION.SDK_INT >= 31 && MaterialYouThemeAPI31.isReady(ThemeMode.AMOLED_MATERIAL_YOU)
+                MaterialYouThemeAPI31.isReady(ThemeMode.AMOLED_MATERIAL_YOU)
         );
     }
 
+    @RequiresApi(31)
     private static boolean applyMode(
             Activity activity,
             ThemeMode requestedMode,
