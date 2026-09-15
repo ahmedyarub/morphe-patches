@@ -38,6 +38,7 @@ val downloadMediaPatch =
     ) {
         dependsOn(
             sharedExtensionPatch,
+            registerFolderPickerPatch,
             instagramDialogBoxEntity,
             mediaDataEntity,
             userDataEntity,

@@ -13,12 +13,19 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.DocumentsContract;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.crimera.constants.ExtensionStrings;
 
-public class FolderPickerActivity extends AppCompatActivity {
+/**
+ * Opens the system folder picker and keeps write access to whatever the user chooses.
+ *
+ * A plain Activity, not AppCompatActivity: it shows nothing of its own, and AppCompat insists on
+ * an AppCompat theme, which the host app is under no obligation to give an activity the patch
+ * declares. The patch registers it in the manifest — without that the app cannot launch it at all,
+ * and the download reports only that the folder picker could not be opened.
+ */
+public class FolderPickerActivity extends android.app.Activity {
 
     private static final int FOLDER_REQUEST_CODE = 43;
 
