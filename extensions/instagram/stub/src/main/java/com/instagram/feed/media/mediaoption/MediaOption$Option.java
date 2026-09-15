@@ -16,4 +16,9 @@ public class MediaOption$Option {
     public static final MediaOption$Option[] $values(){
         return null;
     }
+
+    /** Declared so callers compile; the real class is an enum and inherits this from Enum. */
+    public String name(){
+        return null;
+    }
 }

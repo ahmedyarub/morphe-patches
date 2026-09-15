@@ -53,7 +53,6 @@ public class FeedButton {
     }
 
     public static MediaOption$Option[] addToMenuOptionArray() {
-        Logger.printInfo(() -> "addToMenuOptionArray reached, downloadMedia=" + SettingsStatus.downloadMedia);
         MediaOption$Option[] originalArray = MediaOption$Option.$values();
         List<MediaOption$Option> additionalButtonsList = new ArrayList<>();
 
@@ -139,9 +138,6 @@ public class FeedButton {
 
     public static void addFeedOverflowButton(Object buttonAdderObject, ArrayList buttonlist){
         try {
-            Logger.printInfo(() -> "addFeedOverflowButton enter, adder=" + buttonAdderObject.getClass().getName()
-                    + " list=" + System.identityHashCode(buttonlist) + " size=" + buttonlist.size()
-                    + " enableDownload=" + Pref.enableDownload());
             if(Pref.pikoDebug()){
                 addButton(MediaOption$Option.PIKO_DEBUG, str("piko_debug"), buttonAdderObject, buttonlist);
             }
@@ -154,16 +150,33 @@ public class FeedButton {
             if(Pref.moreOptionsOnPost()) {
                 addButton(MediaOption$Option.PIKO_MORE_POST_OPTION, str("piko_more_options"), buttonAdderObject, buttonlist);
             }
-            Logger.printInfo(() -> "addFeedOverflowButton exit, list=" + System.identityHashCode(buttonlist)
-                    + " size=" + buttonlist.size()
-                    + (buttonlist.isEmpty() ? "" : " last=" + buttonlist.get(buttonlist.size() - 1).getClass().getName()));
         } catch (Exception e) {
-            Logger.printInfo(() -> "addFeedOverflowButton failed: " + e);
             Logger.printException(() -> "Error at addReelButton",e);
         }
     }
 
+    /** The option whose row carries the download action, since an added row is never drawn. */
+    private static final String DOWNLOAD_STAND_IN = "SAVE";
+
+    /**
+     * Whether this row is the one standing in for the download action.
+     *
+     * 446's action sheet draws only the options it recognises — it resolves each row's label and
+     * icon from the option itself rather than from the row — so an option a patch invents is
+     * dropped at render time no matter how correctly it was added to the list. The download action
+     * is therefore attached to an option the app already draws, at the cost of that option's own
+     * behaviour. Save is the one given up.
+     */
+    private static boolean isDownloadStandIn(MediaOption$Option pressedButton){
+        return SettingsStatus.downloadMedia
+                && Pref.enableDownload()
+                && DOWNLOAD_STAND_IN.equals(pressedButton.name());
+    }
+
     public static boolean isCustomButtonPressed(MediaOption$Option pressedButton){
+        if (isDownloadStandIn(pressedButton)) {
+            return true;
+        }
         return (
                 pressedButton.equals(MediaOption$Option.PIKO_DEBUG) ||
                 (SettingsStatus.downloadMedia && pressedButton.equals(MediaOption$Option.PIKO_DOWNLOAD)) ||
@@ -177,7 +190,8 @@ public class FeedButton {
             if(pressedButton.equals(MediaOption$Option.PIKO_DEBUG)) {
                 ObjectBrowser.browseObject(context, new MediaData(mediaObject, userSession));
 
-            } else if (SettingsStatus.downloadMedia && pressedButton.equals(MediaOption$Option.PIKO_DOWNLOAD)) {
+            } else if (isDownloadStandIn(pressedButton)
+                    || (SettingsStatus.downloadMedia && pressedButton.equals(MediaOption$Option.PIKO_DOWNLOAD))) {
                 DownloadUtils.downloadPost(context, userSession, mediaObject, currentMediaIndex);
 
             } else if (SettingsStatus.moreOptionsOnPost && pressedButton.equals(MediaOption$Option.PIKO_MORE_POST_OPTION)) {
