@@ -9,11 +9,9 @@ package app.morphe.extension.instagram.entity;
 
 
 public class MessageInfo extends Entity {
-    private final Object obj;
 
     public MessageInfo(Object obj) {
         super(obj);
-        this.obj = obj;
     }
 
     /**
