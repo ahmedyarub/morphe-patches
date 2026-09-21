@@ -25,6 +25,14 @@ object Constants {
                         version = "447.0.0.55.81",
                         versionCodes =
                             mapOf(
+                                ARM64_V8A to 385311927,
+                            ),
+                        isExperimental = true,
+                    ),
+                    AppTarget(
+                        version = "447.0.0.55.81",
+                        versionCodes =
+                            mapOf(
                                 ARM64_V8A to 385311922,
                             ),
                         isExperimental = true,
