@@ -26,14 +26,17 @@ internal object Constants {
     )
 
     /**
-     * Instagram.
+     * Instagram. Every Instagram patch in the bundle declares this one value, so no two patches
+     * can disagree about which builds they support.
      *
-     * Version codes differ per ABI, so they are deliberately not pinned: the patcher only
-     * needs them when several ABI releases share one version code.
+     * Only the latest release is supported: the patches resolve obfuscated names, and every
+     * extra version is another set of shapes to keep matching. The apkTest task applies the
+     * patches to this build and fails on any fingerprint that does not resolve to exactly one
+     * method.
      *
-     * 446.0.0.49.77 is flagged experimental because the patch has been verified to apply
-     * and to produce the intended bytecode against that build, but its runtime behaviour on
-     * a device has not been confirmed.
+     * Version codes are deliberately not pinned. The 448 arm64 build ships under two version
+     * codes (385412020 and 385412061), and pinning one turns the other away; the patcher only
+     * needs codes when several ABI releases share one version name.
      */
     val COMPATIBILITY_INSTAGRAM = Compatibility(
         name = "Instagram",
@@ -42,11 +45,7 @@ internal object Constants {
         appIconColor = 0xE1306C,
         targets = listOf(
             AppTarget(
-                version = "446.0.0.49.77",
-                isExperimental = true
-            ),
-            AppTarget(
-                version = "439.0.0.37.89"
+                version = "448.0.0.52.84"
             )
         )
     )

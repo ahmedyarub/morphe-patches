@@ -6,27 +6,19 @@
 
 package app.crimera.patches.instagram.entity.decoder
 
-import app.crimera.patches.instagram.utils.Constants.EDIT_MEDIA_INFO_FRAGMENT_CLASS
 import app.morphe.patcher.Fingerprint
-
-// Also used to in description extraction in MediaEntity
-object EditMediaInfoGetCurrentMediaIdFingerprint : Fingerprint(
-    definingClass = EDIT_MEDIA_INFO_FRAGMENT_CLASS,
-    returnType = "Ljava/lang/String;",
-    parameters = listOf(),
-)
-
-object CommentButtonOnClickFingerprint : Fingerprint(
-    returnType = "V",
-    strings = listOf("select_comment_screen_delete_comments_tap", "comment_share_click"),
-)
 
 internal object UserTagInfoDictInitFingerprint : Fingerprint(
     definingClass = "Lcom/instagram/api/schemas/UserTagInfoDict;",
     name = "<init>",
 )
 
+/**
+ * The media helper class, by a method of it taking only a media object. The media class is
+ * compared when matching, not when the object is created: [MEDIA_CLASS_NAME] is only known once
+ * [decoderEntity] has run, and an object initialised any earlier fails for good.
+ */
 object ReelsInlineQualitySurveyRelatedFingerprint : Fingerprint(
     strings = listOf("reels_inline_quality_survey"),
-    parameters = listOf(MEDIA_CLASS_NAME),
+    custom = { method, _ -> method.parameterTypes.singleOrNull()?.toString() == MEDIA_CLASS_NAME },
 )

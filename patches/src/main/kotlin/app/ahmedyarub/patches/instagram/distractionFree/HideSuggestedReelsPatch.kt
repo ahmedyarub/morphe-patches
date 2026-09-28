@@ -1,8 +1,6 @@
 /*
  * Ported from brosssh's Instagram patches.
  * https://github.com/brosssh/morphe-patches
- *
- * Compatibility widened to Instagram 446.0.0.49.77; patch logic unchanged.
  */
 package app.ahmedyarub.patches.instagram.distractionFree
 
@@ -26,12 +24,18 @@ private val FEED_ITEM_KEYS_TO_BE_HIDDEN = arrayOf(
     "suggested_shops"
 )
 
-// The feed-item-type keys used to sit as literals inside the feed's unsafeParseFromJson. On
-// 447 R8 pooled them into the <clinit> of the obfuscated feed-item-type enum, so match on the
-// full key set alone: only that pool carries all of them together. replaceJsonFieldWithBogus
-// then overwrites each wire name in place, which is safe — the enum's valueOf keys off the enum
-// name, not the wire name, so an unrecognised wire name falls through to the skip path.
+/**
+ * The feed item parser, which compares each JSON field name against these keys. Renaming a key
+ * here means the parser never recognises that field, so the item is left without the content it
+ * would show.
+ *
+ * The key set alone is not enough: on 448 it also matches the item's JSON serializer (A00, which
+ * writes the same keys back out) and the feed-item-type enum's initialiser. The serializer comes
+ * first in the dex, so an unnamed fingerprint rewrote it and the patch changed nothing a user sees.
+ */
 private object FeedItemParseFromJsonFingerprint : Fingerprint(
+    name = "unsafeParseFromJson",
+    returnType = "Ljava/lang/Object;",
     strings = listOf(*FEED_ITEM_KEYS_TO_BE_HIDDEN),
 )
 

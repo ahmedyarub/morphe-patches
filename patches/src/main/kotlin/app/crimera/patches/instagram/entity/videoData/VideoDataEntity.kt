@@ -8,11 +8,13 @@ package app.crimera.patches.instagram.entity.videoData
 
 import app.crimera.utils.changeFirstString
 import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.library.instagram.patches.instagramExtensionPatch
 
 val videoDataEntity =
     bytecodePatch(
         description = "This patch is used for decoding obfuscated code of Video data",
     ) {
+        dependsOn(instagramExtensionPatch)
         execute {
 
             ImmutablePandoVideoVersionMapExtensionFingerprint.changeFirstString(ImmutablePandoVideoVersionMapperFingerprint.method.name)

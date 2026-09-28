@@ -51,30 +51,27 @@ internal fun hookShareLinks(extensionMethodName: String) {
         move-result-object v$urlRegister
     """
 
-    var hooked = 0
-
     // Parsed out of a JSON response and stored into a field.
     listOf(
         PermalinkResponseJsonParserFingerprint,
         ProfileUrlResponseJsonParserFingerprint,
     ).forEach { fingerprint ->
-        val match = fingerprint.matchOrNull() ?: return@forEach
+        val match = fingerprint.match()
 
         match.method.apply {
             // The register must provably hold a String: the hook passes it to a
             // String parameter, and a mismatch is a verify error when the class loads,
             // which the extension's own error handling cannot catch. So the first field
             // store after the anchor is not assumed to be the URL - the first store to a
-            // String field is used, and if there is none this call site is left alone.
+            // String field is used.
             val assignmentIndex = instructions.withIndex().firstOrNull { (index, instruction) ->
                 index > match.stringMatches.first().index &&
                     instruction.opcode == Opcode.IPUT_OBJECT &&
                     ((instruction as? ReferenceInstruction)?.reference as? FieldReference)?.type ==
                     "Ljava/lang/String;"
-            }?.index ?: return@forEach
+            }?.index ?: throw PatchException("${fingerprint.javaClass.simpleName} stores no String after its key")
 
             addInstructions(assignmentIndex, hook(instructions[assignmentIndex].registersUsed[0]))
-            hooked++
         }
     }
 
@@ -83,7 +80,7 @@ internal fun hookShareLinks(extensionMethodName: String) {
         StoryItemThirdPartySharingUrlResponseImplFingerprint,
         LiveThirdPartySharingUrlResponseImplFingerprint,
     ).forEach { fingerprint ->
-        val match = fingerprint.matchOrNull() ?: return@forEach
+        val match = fingerprint.match()
 
         // Safe by construction: the fingerprint only matches methods returning String, so
         // the register feeding return-object is a String.
@@ -91,12 +88,6 @@ internal fun hookShareLinks(extensionMethodName: String) {
             val returnInstruction = instructions.last { it.opcode == Opcode.RETURN_OBJECT }
 
             addInstructions(returnInstruction.location.index, hook(returnInstruction.registersUsed[0]))
-            hooked++
         }
     }
-
-    // Each link kind is hooked independently: a call site that moved in a newer app version
-    // should cost that one kind, not the whole patch. Failing only when nothing matched keeps
-    // a silently useless patch from shipping.
-    if (hooked == 0) throw PatchException("No share link call site matched")
 }
