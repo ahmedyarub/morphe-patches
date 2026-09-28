@@ -76,6 +76,26 @@ GITHUB_ACTOR=<username> GITHUB_TOKEN=<token> ./gradlew build
 
 Or put `gpr.user` and `gpr.key` in `~/.gradle/gradle.properties`.
 
+## 🧪 Testing
+
+`./gradlew :patches:test` checks the bundle itself and runs on every pull request.
+
+The patches only mean something against the app builds they target, so the main tests apply
+them to real APKs, which are not in the repository:
+
+```sh
+./gradlew :patches:apkTest -Pmorphe.apks=instagram=<base.apk or .apkm>,reddit=<base.apk or .apkm>
+```
+
+This applies every patch for each app and fails when a patch throws, when a fingerprint
+matches anything but exactly one method, or when patched code refers to a method or field
+that does not exist. Add `-Pmorphe.isolated=true` to also apply each patch on its own, which
+catches a patch that only works because another one was selected with it.
+
+The patched APKs are left in `patches/build/patched`. `scripts/verify-dex.sh` runs ART's
+verifier over one on a rooted emulator, which catches register and type mistakes that only
+fail when the app loads the class.
+
 ## 📜 License
 
 GNU General Public License v3.0. See [LICENSE](LICENSE).
