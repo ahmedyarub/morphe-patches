@@ -7,7 +7,7 @@
 package app.crimera.patches.instagram.entity.mediadata
 
 import app.crimera.patches.instagram.entity.decoder.MEDIA_CLASS_NAME
-import app.crimera.patches.instagram.entity.decoder.ReelsInlineQualitySurveyRelatedFingerprint
+import app.crimera.patches.instagram.entity.decoder.MEDIA_EXT_CLASS
 import app.crimera.patches.instagram.entity.decoder.USER_MODEL_CLASS_NAME
 import app.crimera.patches.instagram.utils.Constants
 import app.crimera.patches.instagram.utils.Constants.EDIT_MEDIA_INFO_FRAGMENT_CLASS
@@ -157,14 +157,16 @@ internal object ProductInfoMapperFingerprint : Fingerprint(
     returnType = "Ljava/util/Map;",
 )
 
+// The media class is compared when matching: decoderEntity only resolves it at patch time.
 internal object GetOriginalSoundDataIntfFromMediaFingerprint : Fingerprint(
-    classFingerprint = ReelsInlineQualitySurveyRelatedFingerprint,
+    definingClass = MEDIA_EXT_CLASS,
     returnType = ORIGINAL_SOUND_DATA_INTF,
+    custom = { method, _ -> method.parameterTypes.singleOrNull()?.toString() == MEDIA_CLASS_NAME },
 )
 
 // The media and user classes are compared when matching: decoderEntity only resolves them at patch time.
 internal object GetUserDataFromMediaFingerprint : Fingerprint(
-    classFingerprint = ReelsInlineQualitySurveyRelatedFingerprint,
+    definingClass = MEDIA_EXT_CLASS,
     custom = { method, _ ->
         method.returnType == USER_MODEL_CLASS_NAME &&
             method.parameterTypes.map { it.toString() } == listOf(USER_SESSION_CLASS, MEDIA_CLASS_NAME)

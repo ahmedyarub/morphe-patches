@@ -34,8 +34,8 @@ internal object Constants {
      * patches to this build and fails on any fingerprint that does not resolve to exactly one
      * method.
      *
-     * Version codes are deliberately not pinned. The 448 arm64 build ships under two version
-     * codes (385412020 and 385412061), and pinning one turns the other away; the patcher only
+     * Version codes are deliberately not pinned. A release ships under more than one version code
+     * (448 had 385412020 and 385412061), and pinning one turns the others away; the patcher only
      * needs codes when several ABI releases share one version name.
      */
     val COMPATIBILITY_INSTAGRAM = Compatibility(
@@ -45,7 +45,7 @@ internal object Constants {
         appIconColor = 0xE1306C,
         targets = listOf(
             AppTarget(
-                version = "448.0.0.52.84"
+                version = "449.0.0.52.84"
             )
         )
     )

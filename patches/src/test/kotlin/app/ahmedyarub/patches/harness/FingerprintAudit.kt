@@ -1,5 +1,6 @@
 package app.ahmedyarub.patches.harness
 
+import app.ahmedyarub.patches.shared.stringPoolsPatch
 import app.crimera.patches.instagram.entity.decoder.decoderEntity
 import app.morphe.library.instagram.patches.instagramExtensionPatch
 import app.morphe.patches.all.misc.resources.resourceMappingPatch
@@ -51,7 +52,7 @@ internal object FingerprintAudit {
                 // Fingerprints on extension classes resolve only once the extension is merged,
                 // resource literals need the resource ids, and some fingerprints compare against
                 // classes the decoder resolves. None of these change the app's own code.
-                if (packageName == "com.instagram.android") dependsOn(instagramExtensionPatch, resourceMappingPatch, decoderEntity)
+                if (packageName == "com.instagram.android") dependsOn(instagramExtensionPatch, resourceMappingPatch, decoderEntity, stringPoolsPatch)
 
                 execute {
                     declaredFingerprints(FINGERPRINT_PACKAGES[packageName].orEmpty()).forEach { (id, declared) ->

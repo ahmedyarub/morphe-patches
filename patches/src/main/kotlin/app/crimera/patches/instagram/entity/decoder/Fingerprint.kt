@@ -14,11 +14,7 @@ internal object UserTagInfoDictInitFingerprint : Fingerprint(
 )
 
 /**
- * The media helper class, by a method of it taking only a media object. The media class is
- * compared when matching, not when the object is created: [MEDIA_CLASS_NAME] is only known once
- * [decoderEntity] has run, and an object initialised any earlier fails for good.
+ * The media helper class. R8 renamed it on earlier releases, and piko found it by a survey key
+ * one of its methods read; 449 keeps the Kotlin name and no longer has that key.
  */
-object ReelsInlineQualitySurveyRelatedFingerprint : Fingerprint(
-    strings = listOf("reels_inline_quality_survey"),
-    custom = { method, _ -> method.parameterTypes.singleOrNull()?.toString() == MEDIA_CLASS_NAME },
-)
+internal const val MEDIA_EXT_CLASS = "Lcom/instagram/feed/media/MediaExtKt;"

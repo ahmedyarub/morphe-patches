@@ -61,7 +61,7 @@ val decoderEntity =
 
             USER_MODEL_CLASS_NAME = UserTagInfoDictInitFingerprint.method.parameters[0].type
 
-            MEDIAEXT_CLASS_NAME = ReelsInlineQualitySurveyRelatedFingerprint.classDef.type
+            MEDIAEXT_CLASS_NAME = classDefBy(MEDIA_EXT_CLASS).type
         }
     }
 
