@@ -29,7 +29,6 @@ import app.morphe.extension.shared.ResourceType;
 import app.morphe.extension.shared.ResourceUtils;
 import app.morphe.extension.shared.Utils;
 import app.morphe.extension.shared.ui.Dim;
-import app.morphe.extension.crimera.constants.TooltipHelper;
 
 public class UI {
 
