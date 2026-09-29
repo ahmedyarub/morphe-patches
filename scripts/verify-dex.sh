@@ -27,7 +27,8 @@ remote=/data/local/tmp/verify
 # Git Bash on Windows rewrites /data/... into a Windows path otherwise.
 export MSYS_NO_PATHCONV=1
 
-adb() { "${ADB:-adb}" -s "$serial" "$@"; }
+# `command` so that without ADB set this runs the adb binary, not this function again.
+adb() { command "${ADB:-adb}" -s "$serial" "$@"; }
 
 # A local path as adb sees it: a Windows adb cannot open Git Bash's /e/... paths.
 local_path() { if command -v cygpath > /dev/null; then cygpath -w "$1"; else echo "$1"; fi; }
@@ -47,7 +48,10 @@ adb wait-for-device
 
 new=$(failures "$patched")
 if [ -n "$original" ]; then
-    new=$(comm -13 <(failures "$original") <(echo "$new"))
+    # Into a variable first: a failure inside <(...) would not stop the script, and every
+    # class would then look verified.
+    old=$(failures "$original")
+    new=$(comm -13 <(echo "$old") <(echo "$new"))
 fi
 
 if [ -n "$new" ]; then
