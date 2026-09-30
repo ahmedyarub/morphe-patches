@@ -2,6 +2,8 @@ package app.ahmedyarub.patches.x.timeline
 
 import app.ahmedyarub.patches.shared.Constants.COMPATIBILITY_X
 import app.ahmedyarub.patches.x.shared.EXTENSION_PACKAGE
+import app.ahmedyarub.patches.x.settings.settingsPatch
+import app.ahmedyarub.patches.x.settings.showSettingsSection
 import app.ahmedyarub.patches.x.sharemenu.addPostAction
 import app.ahmedyarub.patches.x.sharemenu.postMenuPatch
 import app.ahmedyarub.patches.x.shared.xExtensionPatch
@@ -98,10 +100,10 @@ private object InitialKeywordsExtensionFingerprint : Fingerprint(
 val filterPostsByKeywordPatch = bytecodePatch(
     name = "Filter posts by keyword",
     description = "Hides posts whose text contains any of your keywords, ignoring case. " +
-        "Edit the keywords from \"Filtered keywords\" in any post's menu.",
+        "Edit the keywords from \"Filtered keywords\" in any post's menu, or in the Morphe settings.",
 ) {
     compatibleWith(COMPATIBILITY_X)
-    dependsOn(timelineFilterPatch, postMenuPatch)
+    dependsOn(timelineFilterPatch, postMenuPatch, settingsPatch)
 
     val keywords by stringsOption(
         key = "keywords",
@@ -118,5 +120,6 @@ val filterPostsByKeywordPatch = bytecodePatch(
 
         InitialKeywordsExtensionFingerprint.method.returnEarly(filtered.joinToString("|"))
         addPostAction("keywords")
+        showSettingsSection("keywordsEnabled")
     }
 }
