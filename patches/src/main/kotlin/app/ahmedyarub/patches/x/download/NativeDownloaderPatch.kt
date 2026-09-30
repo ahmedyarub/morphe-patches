@@ -9,6 +9,7 @@ import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.util.getReference
+import app.morphe.util.returnEarly
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
@@ -78,6 +79,26 @@ val nativeDownloaderPatch = bytecodePatch(
         }
 
         if (patched == 0) throw PatchException("Nothing reads whether media is downloadable")
+
+        // The video player asks the media itself, through the getter videos and GIFs share, both
+        // before offering Download Video and again before downloading.
+        var getters = 0
+        classDefForEach { classDef ->
+            if (!classDef.type.startsWith("Lcom/x/models/")) return@classDefForEach
+
+            classDef.methods.filter { method ->
+                method.returnType == "Z" && method.parameterTypes.isEmpty() &&
+                    method.implementation?.instructions?.let { instructions ->
+                        instructions.count() == 2 && instructions.first().opcode == Opcode.IGET_BOOLEAN &&
+                            instructions.first().getReference<FieldReference>() in downloadable
+                    } == true
+            }.forEach { getter ->
+                mutableClassDefBy(classDef).methods.first { it.name == getter.name && it.parameterTypes.isEmpty() }
+                    .returnEarly(true)
+                getters++
+            }
+        }
+        if (getters == 0) throw PatchException("The media has no downloadable getter")
 
         // The video player's own Download Video option asks for a Premium subscription first,
         // and shows an upsell without one. The check is skipped there alone: it is the app's
