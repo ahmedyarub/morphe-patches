@@ -14,7 +14,7 @@ import java.util.Map;
 public final class FeatureFlags {
 
     /**
-     * One forced flag per line, key and value separated by a tab. The value starts with its type:
+     * The forced flags, separated by semicolons, each key=value. The value starts with its type:
      * b: boolean, l: long, d: double, s: string. Rewritten by the patches.
      */
     private static String forcedFlags() {
@@ -35,8 +35,8 @@ public final class FeatureFlags {
         if (encoded.isEmpty()) return Collections.emptyMap();
 
         Map<String, Object> overrides = new HashMap<>();
-        for (String line : encoded.split("\n")) {
-            int tab = line.indexOf('\t');
+        for (String line : encoded.split(";")) {
+            int tab = line.indexOf('=');
             if (tab <= 0 || line.length() < tab + 3) continue;
 
             String key = line.substring(0, tab);

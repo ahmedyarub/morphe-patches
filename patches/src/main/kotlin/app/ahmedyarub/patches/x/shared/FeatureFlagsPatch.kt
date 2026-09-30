@@ -28,19 +28,24 @@ private object ForcedFlagsExtensionFingerprint : Fingerprint(
 
 private val forcedFlags = linkedMapOf<String, String>()
 
+private val SAFE_KEY = Regex("[A-Za-z0-9_.:-]+")
+private val SAFE_VALUE = Regex("[A-Za-z0-9_.:,/+@-]*")
+
 /**
  * Makes the app read [value] for the feature switch [key]. Called from the execute block of a
  * patch that depends on [featureFlagsPatch]. The value must have the type the app reads the
  * switch as: a getter handed another type silently falls back to its default.
  */
 internal fun forceFeatureFlag(key: String, value: Any) {
-    if (key.isEmpty() || key.contains('\t') || key.contains('\n')) throw PatchException("Invalid feature switch key: $key")
+    // The flags are written into the extension as one smali string, so keys and values keep to
+    // characters it takes as they are, and to none of the separators.
+    if (!key.matches(SAFE_KEY)) throw PatchException("Invalid feature switch key: $key")
 
     forcedFlags[key] = when (value) {
         is Boolean -> "b:$value"
         is Int, is Long -> "l:$value"
         is Float, is Double -> "d:$value"
-        is String -> if (value.contains('\n')) throw PatchException("Invalid value for $key") else "s:$value"
+        is String -> if (!value.matches(SAFE_VALUE)) throw PatchException("Invalid value for $key: $value") else "s:$value"
         else -> throw PatchException("Unsupported value type for $key: ${value::class.simpleName}")
     }
 }
@@ -70,7 +75,7 @@ val featureFlagsPatch = bytecodePatch(
     // After every patch has registered its flags.
     finalize {
         ForcedFlagsExtensionFingerprint.method.returnEarly(
-            forcedFlags.entries.joinToString("\n") { (key, value) -> "$key\t$value" },
+            forcedFlags.entries.joinToString(";") { (key, value) -> "$key=$value" },
         )
     }
 }
