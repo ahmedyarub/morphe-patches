@@ -61,10 +61,6 @@ public final class Ads {
         }
     }
 
-    /** The timeline item, or null when it is promoted, which the app then leaves out. */
-    public static Object hidePromoted(Object item) {
-        return isPromoted(item) ? null : item;
-    }
 
     private static Path pathOf(Class<?> itemClass, Object sample) {
         try {
