@@ -1,3 +1,9 @@
+## [1.8.1-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.8.0...v1.8.1-dev.1) (2026-09-30)
+
+### 🐛 Bug Fixes
+
+* **Instagram:** Show Download once in the feed and reel menus ([0c7a3fe](https://github.com/ahmedyarub/morphe-patches/commit/0c7a3fe086a658fc66244d2cf1bf648d32ca5edf))
+
 ## [1.8.0](https://github.com/ahmedyarub/morphe-patches/compare/v1.7.1...v1.8.0) (2026-09-29)
 
 ### 🐛 Bug Fixes
