@@ -2,7 +2,7 @@ package app.ahmedyarub.patches.harness
 
 import app.ahmedyarub.patches.shared.stringPoolsPatch
 import app.crimera.patches.instagram.entity.decoder.decoderEntity
-import app.crimera.patches.twitter.misc.extension.sharedExtensionPatch as twitterExtensionPatch
+import app.ahmedyarub.patches.x.shared.xExtensionPatch
 import app.morphe.library.instagram.patches.instagramExtensionPatch
 import app.morphe.patches.all.misc.resources.resourceMappingPatch
 import app.morphe.patcher.Fingerprint
@@ -38,7 +38,7 @@ internal object FingerprintAudit {
         mapOf(
             "com.instagram.android" to listOf("app/ahmedyarub/patches/instagram/", "app/crimera/patches/instagram/"),
             "com.reddit.frontpage" to listOf("app/ahmedyarub/patches/reddit/"),
-            "com.twitter.android" to listOf("app/crimera/patches/twitter/"),
+            "com.twitter.android" to listOf("app/ahmedyarub/patches/x/"),
         )
 
     @JvmStatic
@@ -55,7 +55,7 @@ internal object FingerprintAudit {
                 // resource literals need the resource ids, and some fingerprints compare against
                 // classes the decoder resolves. None of these change the app's own code.
                 if (packageName == "com.instagram.android") dependsOn(instagramExtensionPatch, resourceMappingPatch, decoderEntity, stringPoolsPatch)
-                if (packageName == "com.twitter.android") dependsOn(twitterExtensionPatch, resourceMappingPatch)
+                if (packageName == "com.twitter.android") dependsOn(xExtensionPatch, resourceMappingPatch)
 
                 execute {
                     declaredFingerprints(FINGERPRINT_PACKAGES[packageName].orEmpty()).forEach { (id, declared) ->
