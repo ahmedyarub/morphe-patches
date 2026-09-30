@@ -1,5 +1,6 @@
 package app.ahmedyarub.extension.x;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -161,8 +162,12 @@ public final class PostMenu {
      * Runs an added action the menu reports selected. True when it was one; the caller then
      * closes the menu without letting the app handle the selection.
      */
-    public static boolean onOption(Context context, Object post, Object event) {
+    public static boolean onOption(Context appContext, Object post, Object event) {
         try {
+            // Dialogs need the activity; the menu only has the application context.
+            Activity activity = MainActivity.get();
+            Context context = activity != null ? activity : appContext;
+
             Enum<?> type = selectedType(event);
             if (type == null) return false;
 

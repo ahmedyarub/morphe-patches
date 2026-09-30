@@ -40,6 +40,12 @@ private object PostOptionsEventHandlerFingerprint : Fingerprint(
     strings = listOf("DefaultPostOptionsPresenter"),
 )
 
+private object MainActivityOnCreateFingerprint : Fingerprint(
+    definingClass = "Lcom/x/android/main/MainActivity;",
+    name = "onCreate",
+    parameters = listOf("Landroid/os/Bundle;"),
+)
+
 private class PostMenuSetting(name: String) : Fingerprint(definingClass = POST_MENU_CLASS, name = name)
 
 private val postActions = linkedSetOf<String>()
@@ -68,6 +74,12 @@ internal val postMenuPatch = bytecodePatch(
     execute {
         postActions.clear()
         hiddenOptions = emptyList()
+
+        // The actions' dialogs are shown on the activity: the menu only has the application context.
+        MainActivityOnCreateFingerprint.method.addInstructions(
+            0,
+            "invoke-static { p0 }, $EXTENSION_PACKAGE/MainActivity;->set(Landroid/app/Activity;)V",
+        )
 
         val actionType = DidSelectOptionToStringFingerprint.classDef.fields.single().type
         PostMenuSetting("actionClass").method.returnEarly(actionType.toClassName())
