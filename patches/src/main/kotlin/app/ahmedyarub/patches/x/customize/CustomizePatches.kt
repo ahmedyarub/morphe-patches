@@ -8,7 +8,11 @@ import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLa
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
 import app.morphe.patcher.patch.PatchException
+import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.patches.all.misc.resources.ResourceType
+import app.morphe.patches.all.misc.resources.getResourceId
+import app.morphe.patches.all.misc.resources.resourceMappingPatch
 import app.morphe.patcher.patch.stringOption
 import app.morphe.patcher.patch.stringsOption
 import app.morphe.patcher.util.smali.ExternalLabel
@@ -453,7 +457,26 @@ val customizeTimelineTopBarPatch = bytecodePatch(
         ),
     )
 
+    val hideAddTab by booleanOption(
+        key = "hideAddTab",
+        default = false,
+        title = "Hide the Add tab",
+        description = "Hides the + tab that pins a new timeline to the top bar.",
+    )
+
+    dependsOn(resourceMappingPatch)
+
     execute {
+        // The + tab is drawn by its own composable, labelled "Add tab". Returning before its
+        // group starts draws nothing.
+        if (hideAddTab == true) {
+            val label = getResourceId(ResourceType.STRING, "add_tab")
+            val addTab = classDefBy { classDef ->
+                classDef.methods.any { method -> method.isAddTab(label) }
+            }
+            mutableClassDefBy(addTab).methods.single { it.isAddTab(label) }.addInstructions(0, "return-void")
+        }
+
         hidden.writeHidden(CustomiseSetting("homeTabsHidden")) { it.lowercase() }
 
         // The default tabs, For you and Following.
@@ -483,3 +506,10 @@ val customizeTimelineTopBarPatch = bytecodePatch(
 }
 
 // endregion
+
+private fun com.android.tools.smali.dexlib2.iface.Method.isAddTab(label: Long) =
+    AccessFlags.STATIC.isSet(accessFlags) && returnType == "V" &&
+        parameterTypes.map { it.toString() } == listOf("Lkotlin/jvm/functions/Function0;", "Landroidx/compose/runtime/Composer;", "I") &&
+        implementation?.instructions?.any {
+            (it as? com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction)?.wideLiteral == label
+        } == true
