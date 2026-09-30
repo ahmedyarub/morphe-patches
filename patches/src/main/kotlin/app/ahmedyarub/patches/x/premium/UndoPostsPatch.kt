@@ -92,6 +92,14 @@ val undoPostsPatch = bytecodePatch(
                 move-result-object v$window
                 """,
             )
+
+            // The app reuses that null for another type after the job is queued, so it is put
+            // back once the window is handed over.
+            val queuedWithWindow = instructions.first { instruction ->
+                instruction.location.index > index && instruction.opcode == Opcode.INVOKE_DIRECT &&
+                    instruction.getReference<MethodReference>()?.let { it.definingClass == queued && it.name == "<init>" } == true
+            }.location.index
+            addInstructions(queuedWithWindow + 1, "const/4 v$window, 0x0")
         }
     }
 }
