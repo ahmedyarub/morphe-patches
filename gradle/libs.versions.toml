@@ -6,7 +6,7 @@ gson = "2.14.0"
 morphe-patches-library = "1.6.2"
 instagram-morphe-patches-library = "1.1.0"
 annotation = "1.9.1"
-appcompat = "1.7.0"
+appcompat = "1.8.0"
 junit = "5.14.4"
 # Only for the tests; the patcher brings its own copy at runtime.
 kotlinx-coroutines = "1.10.2"
