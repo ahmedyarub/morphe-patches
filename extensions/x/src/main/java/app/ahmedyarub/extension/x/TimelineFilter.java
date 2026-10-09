@@ -267,30 +267,8 @@ public final class TimelineFilter {
 
     // region Following detection
 
-    /**
-     * Whether the post author is someone the viewer follows. The Kotlin data-class toString of the
-     * timeline item includes the author's user data, which prints its following status as
-     * {@code following=true} or {@code isFollowing=true}.
-     */
     private static boolean isFollowedIn(String repr) {
-        return indexOfFollowingTrue(repr, "following=true") >= 0
-                || indexOfFollowingTrue(repr, "isFollowing=true") >= 0;
-    }
-
-    /**
-     * Finds [pattern] in [repr] where it is preceded by a data-class field separator ({@code ", "}
-     * or {@code "("}), which avoids matching inside unrelated substrings.
-     */
-    private static int indexOfFollowingTrue(String repr, String pattern) {
-        int from = 0;
-        while (true) {
-            int idx = repr.indexOf(pattern, from);
-            if (idx < 0) return -1;
-            if (idx == 0) return idx;
-            char before = repr.charAt(idx - 1);
-            if (before == ' ' || before == '(' || before == ',') return idx;
-            from = idx + 1;
-        }
+        return repr.contains("isFollowedByMe=true");
     }
 
     // endregion

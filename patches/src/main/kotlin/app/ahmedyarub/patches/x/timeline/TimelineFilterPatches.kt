@@ -143,7 +143,7 @@ val feedFiltersPatch = bytecodePatch(
         "and include/exclude keyword filtering. Toggle each filter from the Morphe settings.",
 ) {
     compatibleWith(COMPATIBILITY_X)
-    dependsOn(timelineFilterPatch, settingsPatch)
+    dependsOn(timelineFilterPatch, postMenuPatch, settingsPatch)
 
     val includeKeywords by stringsOption(
         key = "includeKeywords",
@@ -161,6 +161,7 @@ val feedFiltersPatch = bytecodePatch(
         }
         InitialIncludeKeywordsFingerprint.method.returnEarly(filtered.joinToString("|"))
 
+        addPostAction("settings")
         showSettingsSection("feedFiltersEnabled")
     }
 }

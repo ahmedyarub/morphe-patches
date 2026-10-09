@@ -19,9 +19,10 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
-import android.widget.TextView;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
+import android.view.Window;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -61,14 +62,21 @@ public final class SettingsActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
         super.onCreate(savedInstanceState);
-        setTitle("Morphe settings");
 
         list = new LinearLayout(this);
         list.setOrientation(LinearLayout.VERTICAL);
         ScrollView scroll = new ScrollView(this);
+        scroll.setFitsSystemWindows(true);
         scroll.addView(list);
         setContentView(scroll);
+
+        TextView title = new TextView(this);
+        title.setText("Morphe settings");
+        title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
+        title.setPadding(dp(20), dp(16), dp(20), dp(8));
+        list.addView(title);
 
         if (feedFiltersEnabled()) {
             header("Feed Filters");
@@ -144,10 +152,13 @@ public final class SettingsActivity extends Activity {
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setPadding(dp(20), dp(12), dp(20), dp(12));
         row.setGravity(Gravity.CENTER_VERTICAL);
+        row.setClickable(true);
+        TypedValue ripple = new TypedValue();
+        getTheme().resolveAttribute(android.R.attr.selectableItemBackground, ripple, true);
+        row.setBackgroundResource(ripple.resourceId);
 
         LinearLayout texts = new LinearLayout(this);
         texts.setOrientation(LinearLayout.VERTICAL);
-        texts.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
 
         TextView titleView = new TextView(this);
         titleView.setText(title);
@@ -167,9 +178,9 @@ public final class SettingsActivity extends Activity {
             Toast.makeText(this, "Refresh a timeline to apply.", Toast.LENGTH_SHORT).show();
         });
 
-        row.addView(texts);
-        row.addView(toggle);
-        row.setClickable(true);
+        row.addView(texts, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+        row.addView(toggle, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
         row.setOnClickListener(v -> toggle.toggle());
         list.addView(row);
     }
