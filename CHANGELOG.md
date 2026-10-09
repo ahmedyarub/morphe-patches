@@ -1,3 +1,9 @@
+## [1.14.0-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.13.0...v1.14.0-dev.1) (2026-10-09)
+
+### ✨ New Features
+
+* Remove Grok, hide suggested followings, filter Your Turn stories, reorder menu ([96f3902](https://github.com/ahmedyarub/morphe-patches/commit/96f3902959954067eecd4888e1c46ba34dbeffb7))
+
 ## [1.13.0](https://github.com/ahmedyarub/morphe-patches/compare/v1.12.0...v1.13.0) (2026-10-09)
 
 ### 🐛 Bug Fixes
