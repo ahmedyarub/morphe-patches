@@ -1,6 +1,8 @@
 package app.ahmedyarub.patches.x.customize
 
 import app.ahmedyarub.patches.shared.Constants.COMPATIBILITY_X
+import app.ahmedyarub.patches.x.shared.featureFlagsPatch
+import app.ahmedyarub.patches.x.shared.forceFeatureFlag
 import app.ahmedyarub.patches.x.shared.xExtensionPatch
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
@@ -94,9 +96,10 @@ private object LandingTabsFingerprint : Fingerprint(
 val customizeNavigationBarPatch = bytecodePatch(
     name = "Customize Navigation Bar items",
     description = "Hides tabs from the bottom navigation bar. Home always stays.",
+    default = true,
 ) {
     compatibleWith(COMPATIBILITY_X)
-    dependsOn(xExtensionPatch)
+    dependsOn(xExtensionPatch, featureFlagsPatch)
 
     val hidden = hideOptions(
         linkedMapOf(
@@ -105,10 +108,12 @@ val customizeNavigationBarPatch = bytecodePatch(
             "notifications" to "Notifications",
             "dm" to "Messages",
         ),
+        defaultOn = setOf("grok"),
     )
 
     execute {
         hidden.writeHidden(CustomiseSetting("navBarHidden"))
+        forceFeatureFlag("android_webview_grok_tab_enabled", false)
 
         // The tabs are filtered into a list, then a map sized for it is created, then the list is
         // iterated to fill the map. The list is filtered when that iteration starts: the map's
@@ -381,6 +386,7 @@ private val SIDE_BAR_ROWS = linkedMapOf(
 val customizeSideBarPatch = bytecodePatch(
     name = "Customize side bar items",
     description = "Hides rows from the side bar.",
+    default = true,
 ) {
     compatibleWith(COMPATIBILITY_X)
     dependsOn(xExtensionPatch)
@@ -393,6 +399,7 @@ val customizeSideBarPatch = bytecodePatch(
             "monetization" to "Monetization", "creatorStudio" to "Creator Studio", "analytics" to "Analytics",
             "grok" to "Grok",
         ),
+        defaultOn = setOf("grok"),
     )
 
     execute {

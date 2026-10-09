@@ -21,11 +21,14 @@ internal const val CUSTOMISE_CLASS = "$EXTENSION_PACKAGE/Customise;"
 internal class CustomiseSetting(name: String) : Fingerprint(definingClass = CUSTOMISE_CLASS, name = name)
 
 /** One option per item a Customize patch can hide, keyed by the key the extension matches on. */
-internal fun BytecodePatchBuilder.hideOptions(items: Map<String, String>): Map<String, Option<Boolean>> =
+internal fun BytecodePatchBuilder.hideOptions(
+    items: Map<String, String>,
+    defaultOn: Set<String> = emptySet(),
+): Map<String, Option<Boolean>> =
     items.mapValues { (key, title) ->
         booleanOption(
             key = "hide${key.replaceFirstChar { it.uppercase() }}",
-            default = false,
+            default = key in defaultOn,
             title = "Hide $title",
         )
     }

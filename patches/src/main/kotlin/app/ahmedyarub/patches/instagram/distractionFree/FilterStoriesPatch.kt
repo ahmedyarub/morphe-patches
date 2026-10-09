@@ -48,6 +48,13 @@ val filterStoriesPatch = bytecodePatch(
         description = "Hides resurfaced highlights, which carry no expiry, from the story tray.",
     )
 
+    val hideYourTurn by booleanOption(
+        key = "hideYourTurnStories",
+        default = true,
+        title = "Hide \"Your Turn\" stories",
+        description = "Hides \"Add Yours\" / \"Your Turn\" stories from the story tray.",
+    )
+
     execute {
         if (hideAds == true) filterStories("ads_reel")
 
@@ -58,5 +65,7 @@ val filterStoriesPatch = bytecodePatch(
         )
 
         if (hideHighlights == true) filterStories("highlight_rewind_reel")
+
+        if (hideYourTurn == true) filterStories("prompt_sticker_reel")
     }
 }

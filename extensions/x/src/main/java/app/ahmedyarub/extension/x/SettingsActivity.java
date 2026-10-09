@@ -84,6 +84,8 @@ public final class SettingsActivity extends Activity {
                     TimelineFilter.isMediaOnlyEnabled(), TimelineFilter::setMediaOnly);
             toggle("Hide followed profiles", "Hide posts from profiles you follow.",
                     TimelineFilter.isHideFollowedEnabled(), TimelineFilter::setHideFollowed);
+            toggle("Hide suggested followings", "Hide \"Who to follow\" sections from the feed.",
+                    TimelineFilter.isHideSuggestedEnabled(), TimelineFilter::setHideSuggested);
             row("Include keywords", "Only show posts containing at least one of these words.", this::editIncludeKeywords);
             row("Exclude keywords", "Hide posts containing any of these words.", this::editKeywords);
         }
