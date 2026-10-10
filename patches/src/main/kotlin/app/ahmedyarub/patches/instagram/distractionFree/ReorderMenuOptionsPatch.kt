@@ -9,63 +9,50 @@ import app.morphe.patcher.extensions.InstructionExtensions.instructions
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.util.getReference
-import app.morphe.util.registersUsed
 import com.android.tools.smali.dexlib2.Opcode
-import com.android.tools.smali.dexlib2.iface.reference.TypeReference
+import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 
 private const val MENU_REORDER_CLASS = "Lapp/ahmedyarub/extension/instagram/MenuReorder;"
 
 /**
- * The method that assembles the post menu options into an ArrayList.
- * Anchored on a string constant that only appears in this builder.
+ * The method that presents the overflow bottom sheet. It reads the LinkedList from the
+ * menu model and hands it to the sheet adapter. Anchored on the analytics string
+ * "overflow_bottom_sheet" which appears only in this presenter.
  */
-private object MenuOptionsBuilderFingerprint : Fingerprint(
-    strings = listOf("TEXT_POST_APP_INACTIVE"),
+private object OverflowSheetPresenterFingerprint : Fingerprint(
+    strings = listOf("overflow_bottom_sheet"),
 )
 
 @Suppress("unused")
 val reorderMenuOptionsPatch = bytecodePatch(
     name = "Reorder menu options",
     description = "Moves Interested and Not Interested to the top of the post menu.",
-    default = true
+    default = true,
 ) {
     compatibleWith(COMPATIBILITY_INSTAGRAM)
     dependsOn(instagramExtensionPatch)
 
     execute {
-        MenuOptionsBuilderFingerprint.method.apply {
-            val arrayListInstructions = instructions.filter {
-                it.opcode == Opcode.NEW_INSTANCE &&
-                    it.getReference<TypeReference>()?.type == "Ljava/util/ArrayList;"
-            }
+        OverflowSheetPresenterFingerprint.method.apply {
+            // Find the iget-object that reads the LinkedList field (A0H) from the model.
+            // This is the list that's about to be passed to the sheet adapter for rendering.
+            val linkedListRead = instructions.withIndex().firstOrNull { (_, instruction) ->
+                instruction.opcode == Opcode.IGET_OBJECT &&
+                    instruction.getReference<FieldReference>()?.type == "Ljava/util/LinkedList;"
+            } ?: throw PatchException("No LinkedList field read found in the sheet presenter")
 
-            if (arrayListInstructions.isEmpty()) {
-                throw PatchException("No ArrayList found in the menu options builder")
-            }
+            val twoReg = getInstruction<TwoRegisterInstruction>(linkedListRead.index)
+            val listRegister = twoReg.registerA
 
-            val arrayListInstruction = arrayListInstructions.first()
-            val arrayListRegister = arrayListInstruction.registersUsed[0]
-
-            val returnIndices = instructions.mapIndexedNotNull { index, instruction ->
-                if (instruction.opcode == Opcode.RETURN_VOID ||
-                    instruction.opcode == Opcode.RETURN_OBJECT
-                ) index else null
-            }
-
-            if (returnIndices.isEmpty()) {
-                throw PatchException("No return instruction found in the menu options builder")
-            }
-
-            var offset = 0
-            for (returnIndex in returnIndices) {
-                addInstructions(
-                    returnIndex + offset,
-                    """
-                    invoke-static { v$arrayListRegister }, $MENU_REORDER_CLASS->reorderMenuOptions(Ljava/util/List;)V
-                    """.trimIndent(),
-                )
-                offset++
-            }
+            // Inject the reorder call right after the LinkedList is read, before it's
+            // passed to the sheet adapter.
+            addInstructions(
+                linkedListRead.index + 1,
+                """
+                invoke-static { v$listRegister }, $MENU_REORDER_CLASS->reorderMenuOptions(Ljava/util/List;)V
+                """.trimIndent(),
+            )
         }
     }
 }

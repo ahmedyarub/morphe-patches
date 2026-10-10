@@ -291,9 +291,12 @@ public final class TimelineFilter {
     private static boolean isSuggestedModule(Object item) {
         String repr = String.valueOf(item);
         return repr.contains("UserRecommendation(")
+                || repr.contains("UserRecommendationsGroup(")
                 || repr.contains("WhoToFollow(")
                 || repr.contains("suggestedUser")
-                || repr.contains("FollowSuggestion(");
+                || repr.contains("FollowSuggestion(")
+                || repr.contains("SuggestionItem(")
+                || repr.contains("CommunitiesModule(");
     }
 
     // endregion

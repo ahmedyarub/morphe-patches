@@ -86,7 +86,7 @@ private object LandingTabsFingerprint : Fingerprint(
     name = "<init>",
     strings = listOf("android_webview_grok_tab_enabled"),
     custom = { method, _ ->
-        method.parameterTypes.size == 5 && method.implementation?.instructions?.any {
+        method.parameterTypes.size >= 5 && method.implementation?.instructions?.any {
             it.opcode == Opcode.NEW_INSTANCE && it.getReference<TypeReference>()?.type == "Ljava/util/LinkedHashMap;"
         } == true
     },
