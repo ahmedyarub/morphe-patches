@@ -9,7 +9,7 @@ annotation = "1.9.1"
 appcompat = "1.7.0"
 junit = "5.14.4"
 # Only for the tests; the patcher brings its own copy at runtime.
-kotlinx-coroutines = "1.10.2"
+kotlinx-coroutines = "1.11.0"
 
 [libraries]
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
