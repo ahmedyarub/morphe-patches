@@ -1,3 +1,15 @@
+## [1.14.0-dev.2](https://github.com/ahmedyarub/morphe-patches/compare/v1.14.0-dev.1...v1.14.0-dev.2) (2026-10-10)
+
+### ✨ New Features
+
+* Auto-not-interested, story netego filter, X 12.33.0 compat ([637ecec](https://github.com/ahmedyarub/morphe-patches/commit/637ecec6dc0c5890b8553f54e64d16e2a07ef662))
+
+## [1.14.0-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.13.0...v1.14.0-dev.1) (2026-10-09)
+
+### ✨ New Features
+
+* Remove Grok, hide suggested followings, filter Your Turn stories, reorder menu ([96f3902](https://github.com/ahmedyarub/morphe-patches/commit/96f3902959954067eecd4888e1c46ba34dbeffb7))
+
 ## [1.13.0](https://github.com/ahmedyarub/morphe-patches/compare/v1.12.0...v1.13.0) (2026-10-09)
 
 ### 🐛 Bug Fixes

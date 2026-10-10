@@ -1,5 +1,6 @@
 package app.ahmedyarub.extension.instagram;
 
+import java.lang.reflect.Field;
 import java.util.List;
 
 import app.morphe.extension.shared.Logger;
@@ -12,14 +13,6 @@ public final class StoryTray {
     private StoryTray() {
     }
 
-    /**
-     * Injection point, in place of the story tray parser's own {@code list.add(story)}.
-     *
-     * <p>The library's filter reads the story's reel type by reflection and lets any exception
-     * out. Inside the tray parser that exception abandons the whole tray, so every story
-     * disappears because one item was not the shape the filter expected. Here a failure only
-     * costs filtering that one story: it is added as the app would have added it.
-     */
     public static void addStoryIfNotBlocked(List<Object> stories, Object story, String reelTypeFieldName) {
         try {
             FilterStoriesListPatch.addStoryIfNotBlocked(stories, story, reelTypeFieldName);
@@ -31,5 +24,43 @@ public final class StoryTray {
             }
             stories.add(story);
         }
+
+        if (story == null) return;
+
+        try {
+            if (hasYourTurnPrompt(story)) {
+                stories.remove(story);
+                return;
+            }
+            if (isNetegoItem(story)) {
+                stories.remove(story);
+            }
+        } catch (Throwable ignored) {
+        }
+    }
+
+    private static boolean hasYourTurnPrompt(Object story) {
+        try {
+            Field f = story.getClass().getDeclaredField("A0I");
+            f.setAccessible(true);
+            return f.get(story) != null;
+        } catch (Throwable e) {
+            return false;
+        }
+    }
+
+    private static boolean isNetegoItem(Object story) {
+        for (String fieldName : new String[]{
+                "A09", "A0A", "A0G", "A0J", "A0R",
+                "A0U", "A0V", "A0W", "A0X", "A0Y", "A0Z",
+                "A0b", "A0d", "A0e", "A0f", "A0g"}) {
+            try {
+                Field f = story.getClass().getDeclaredField(fieldName);
+                f.setAccessible(true);
+                if (f.get(story) != null) return true;
+            } catch (Throwable ignored) {
+            }
+        }
+        return false;
     }
 }

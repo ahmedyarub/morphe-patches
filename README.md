@@ -15,15 +15,15 @@ Click here to add these patches to Morphe: https://morphe.software/add-source?gi
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.13.0](https://github.com/ahmedyarub/morphe-patches/releases/tag/v1.13.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;58 patches total
+> **[v1.14.0-dev.2](https://github.com/ahmedyarub/morphe-patches/releases/tag/v1.14.0-dev.2)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;60 patches total
 <details open>
 <summary>📦 X&nbsp;&nbsp;•&nbsp;&nbsp;41 patches</summary>
 <br>
 
 **🎯 Supported versions:**
 
-| 12.32.0-prod.01 |
-| :---: |
+| 12.32.0-prod.01 | 12.33.0-prod.01 |
+| :---: | :---: |
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
@@ -72,7 +72,7 @@ Click here to add these patches to Morphe: https://morphe.software/add-source?gi
 </details>
 
 <details open>
-<summary>📦 Instagram&nbsp;&nbsp;•&nbsp;&nbsp;15 patches</summary>
+<summary>📦 Instagram&nbsp;&nbsp;•&nbsp;&nbsp;17 patches</summary>
 <br>
 
 **🎯 Supported versions:**
@@ -82,12 +82,13 @@ Click here to add these patches to Morphe: https://morphe.software/add-source?gi
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
+| [Auto not interested](#auto-not-interested) | Skips the reason popup and auto-submits when tapping Not Interested. |  |
 | [Bypass signature check](#bypass-signature-check) |  |  |
 | [Disable analytics](#disable-analytics) | Blocks analytics requests sent to Instagram and Facebook servers. |  |
 | [Disable screenshot detection](#disable-screenshot-detection) | Disables screenshot detection in direct messages and stories. |  |
 | [Download media](#download-media) | Adds ability to download posts, reels, stories and highlights |  |
 | [Download voice message](#download-voice-message) | Enables ability to download voice messages |  |
-| [Filter stories](#filter-stories) | Hides categories of stories from the story tray. | • Hide ad stories<br>• Hide suggested stories<br>• Hide highlights |
+| [Filter stories](#filter-stories) | Hides categories of stories from the story tray. | • Hide ad stories<br>• Hide suggested stories<br>• Hide highlights<br>• Hide "Your Turn" stories |
 | [Hide Instants](#hide-instants) | Hides Instants from DMs page. |  |
 | [Hide Threads profile button](#hide-threads-profile-button) | Hides the Threads button from the profile page action bar (top right of the profile page). |  |
 | [Hide ads](#hide-ads) | Hides ads in the feed. |  |
@@ -95,6 +96,7 @@ Click here to add these patches to Morphe: https://morphe.software/add-source?gi
 | [Improve image viewing](#improve-image-viewing) | Requests the maximum resolution images from the server. |  |
 | [Make ephemeral media permanent](#make-ephemeral-media-permanent) | Changes unexpired view once, view twice media to permanent view. |  |
 | [Open links externally](#open-links-externally) | Opens links in the system browser instead of the in-app browser. |  |
+| [Reorder menu options](#reorder-menu-options) | Moves Interested and Not Interested to the top of the post menu. |  |
 | [Sanitize share links](#sanitize-share-links) | Removes tracking parameters from links shared out of the app. |  |
 | [Save deleted messages](#save-deleted-messages) | Keeps a local copy of incoming DMs so ones the sender deletes stay readable. Messages are stored unencrypted in the app's private storage. | • Days to keep messages |
 

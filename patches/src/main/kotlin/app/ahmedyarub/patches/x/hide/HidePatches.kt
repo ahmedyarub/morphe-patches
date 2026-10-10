@@ -223,15 +223,16 @@ val hideFabPatch = bytecodePatch(
 
         // The shared FAB composable: in the button's class, it builds the lambda drawing the
         // button and shows it animated. Returning before its group starts draws nothing.
-        fun isFab(method: com.android.tools.smali.dexlib2.iface.Method, lambda: String) =
-            AccessFlags.STATIC.isSet(method.accessFlags) && method.returnType == "V" &&
-                method.parameterTypes.map { it.toString() } == listOf(
-                    "Landroidx/compose/ui/Modifier;", "Lkotlin/jvm/functions/Function0;",
-                    "Landroidx/compose/runtime/Composer;", "I", "I",
-                ) &&
-                method.implementation?.instructions?.any {
-                    it.opcode == Opcode.NEW_INSTANCE && it.getReference<TypeReference>()?.type == lambda
-                } == true
+        fun isFab(method: com.android.tools.smali.dexlib2.iface.Method, lambda: String): Boolean {
+            if (!AccessFlags.STATIC.isSet(method.accessFlags) || method.returnType != "V") return false
+            val params = method.parameterTypes.map { it.toString() }.toSet()
+            if ("Landroidx/compose/ui/Modifier;" !in params) return false
+            if ("Lkotlin/jvm/functions/Function0;" !in params) return false
+            if ("Landroidx/compose/runtime/Composer;" !in params) return false
+            return method.implementation?.instructions?.any {
+                it.opcode == Opcode.NEW_INSTANCE && it.getReference<TypeReference>()?.type == lambda
+            } == true
+        }
 
         val (lambda, button) = drawers.singleOrNull { (lambda, button) ->
             classDefBy(button.definingClass).methods.any { isFab(it, lambda) }

@@ -52,6 +52,7 @@ public final class TimelineFilter {
     private static final String MEDIA_ONLY_KEY = "feed_media_only";
     private static final String HIDE_FOLLOWED_KEY = "feed_hide_followed";
     private static final String INCLUDE_KEYWORDS_KEY = "feed_include_keywords";
+    private static final String HIDE_SUGGESTED_KEY = "feed_hide_suggested";
 
     private static final class Setup {
         static final boolean HIDE_PROMOTED = hidePromoted();
@@ -132,6 +133,14 @@ public final class TimelineFilter {
         preferences().edit().putBoolean(HIDE_FOLLOWED_KEY, enabled).apply();
     }
 
+    public static boolean isHideSuggestedEnabled() {
+        return preferences().getBoolean(HIDE_SUGGESTED_KEY, true);
+    }
+
+    public static void setHideSuggested(boolean enabled) {
+        preferences().edit().putBoolean(HIDE_SUGGESTED_KEY, enabled).apply();
+    }
+
     // endregion
 
     private static SharedPreferences preferences() {
@@ -153,6 +162,10 @@ public final class TimelineFilter {
 
         if (Setup.HIDE_PROMOTED && Ads.isPromoted(item)) return true;
         if (containsExcludeKeyword(item)) return true;
+
+        if (Setup.FEED_FILTERS && !isPost(item)) {
+            if (isHideSuggestedEnabled() && isSuggestedModule(item)) return true;
+        }
 
         if (Setup.FEED_FILTERS && isPost(item)) {
             boolean needsMedia = isMediaOnlyEnabled();
@@ -269,6 +282,21 @@ public final class TimelineFilter {
 
     private static boolean isFollowedIn(String repr) {
         return repr.contains("isFollowedByMe=true");
+    }
+
+    // endregion
+
+    // region Suggested module detection
+
+    private static boolean isSuggestedModule(Object item) {
+        String repr = String.valueOf(item);
+        return repr.contains("UserRecommendation(")
+                || repr.contains("UserRecommendationsGroup(")
+                || repr.contains("WhoToFollow(")
+                || repr.contains("suggestedUser")
+                || repr.contains("FollowSuggestion(")
+                || repr.contains("SuggestionItem(")
+                || repr.contains("CommunitiesModule(");
     }
 
     // endregion
