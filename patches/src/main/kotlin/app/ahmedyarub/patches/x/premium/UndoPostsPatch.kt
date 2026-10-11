@@ -2,19 +2,21 @@ package app.ahmedyarub.patches.x.premium
 
 import app.ahmedyarub.patches.shared.Constants.COMPATIBILITY_X
 import app.morphe.patcher.Fingerprint
-import app.morphe.patcher.extensions.InstructionExtensions.instructions
-import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.extensions.InstructionExtensions.instructions
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.patch.intOption
+import app.morphe.util.getFreeRegisterProvider
 import app.morphe.util.getReference
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.Method
+import com.android.tools.smali.dexlib2.iface.instruction.Instruction
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
-import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
-import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.TypeReference
+
+private const val INSTANT = "Lkotlin/time/Instant;"
 
 private object QueuedToStringFingerprint : Fingerprint(
     name = "toString",
@@ -27,8 +29,15 @@ private object UploadJobToStringFingerprint : Fingerprint(
 )
 
 /**
- * The upload pipeline still holds a queued post until its undo window ends, and the upload banner
- * still offers Undo meanwhile, but the job is always queued with no window. This gives it one.
+ * The upload pipeline holds a queued post until its undo window ends, and the upload banner offers
+ * Undo meanwhile. A freshly queued post is built with no window — `Queued(undoUntil = null)` — so
+ * it is sent at once with nothing to undo. This gives every queued post a window of a few seconds.
+ *
+ * The one method that builds both [Queued] and the [UploadJob] wrapping it (the store's row → job
+ * mapper) is where the window is decided. Right after the `Queued` instance is created, its
+ * `undoUntil` argument register is overwritten with `now + the chosen delay`, before the
+ * constructor consumes it — so the window is set the same way on every path, however the mapper
+ * arrived at the construction.
  */
 @Suppress("unused")
 val undoPostsPatch = bytecodePatch(
@@ -52,54 +61,83 @@ val undoPostsPatch = bytecodePatch(
         val queued = QueuedToStringFingerprint.classDef.type
         val uploadJob = UploadJobToStringFingerprint.classDef.type
 
-        fun createsJob(method: com.android.tools.smali.dexlib2.iface.Method) =
+        fun Instruction.isFromEpochMilliseconds() =
+            opcode == Opcode.INVOKE_STATIC &&
+                getReference<MethodReference>()?.let {
+                    it.definingClass == "Lkotlin/time/Instant\$Companion;" &&
+                        it.parameterTypes.map { type -> type.toString() } == listOf("J") &&
+                        it.returnType == INSTANT
+                } == true
+
+        // Two methods build both Queued and its UploadJob: the composer's enqueue command and the
+        // store's row → job mapper. Only the mapper turns a stored millisecond undo time into an
+        // Instant, so requiring that call selects the mapper, the method this patch rewrites.
+        fun createsJob(method: Method) =
             method.implementation?.instructions?.let { instructions ->
                 instructions.any { it.opcode == Opcode.NEW_INSTANCE && it.getReference<TypeReference>()?.type == queued } &&
-                    instructions.any { it.opcode == Opcode.NEW_INSTANCE && it.getReference<TypeReference>()?.type == uploadJob }
+                    instructions.any { it.opcode == Opcode.NEW_INSTANCE && it.getReference<TypeReference>()?.type == uploadJob } &&
+                    instructions.any { it.isFromEpochMilliseconds() }
             } == true
 
-        mutableClassDefBy(classDefBy { classDef -> classDef.methods.any(::createsJob) }).methods.single(::createsJob).apply {
-            // The job is queued as new Queued(null): a const 0 handed to its constructor.
-            val create = instructions.first { it.opcode == Opcode.NEW_INSTANCE && it.getReference<TypeReference>()?.type == queued }
-            val noWindow = instructions[create.location.index + 1]
-            if (noWindow.opcode != Opcode.CONST_4 || (noWindow as NarrowLiteralInstruction).narrowLiteral != 0) {
-                throw PatchException("The post is not queued without an undo window")
+        // kotlin.time.Instant's two Duration operators (plus and minus) share one shape — (J)Instant
+        // — and are obfuscated. minus is implemented by negating and delegating to plus, so plus is
+        // the one the other calls; this finds it without depending on the obfuscated name.
+        val instantOps = classDefBy { it.type == INSTANT }.methods.filter { method ->
+            method.parameterTypes.map { it.toString() } == listOf("J") && method.returnType == INSTANT
+        }.toList()
+        val plus = instantOps.firstOrNull { candidate ->
+            instantOps.any { other ->
+                other !== candidate && other.implementation?.instructions?.any { instruction ->
+                    instruction.getReference<MethodReference>()?.let { it.definingClass == INSTANT && it.name == candidate.name } == true
+                } == true
             }
-            val window = (noWindow as OneRegisterInstruction).registerA
+        } ?: throw PatchException("Could not identify kotlin.time.Instant.plus")
 
-            // Its expiry is the creation time plus a duration, just before; the window is made the
-            // same way, from the same time, in the same registers, which are free by then.
-            val expiry = instructions.last { instruction ->
-                instruction.location.index < create.location.index && instruction.opcode == Opcode.INVOKE_VIRTUAL &&
-                    instruction.getReference<MethodReference>()?.let {
-                        it.definingClass == "Lkotlin/time/Instant;" && it.parameterTypes.map { type -> type.toString() } == listOf("J")
-                    } == true
-            } as FiveRegisterInstruction
-            val plus = expiry.getReference<MethodReference>()!!
-            val now = expiry.registerC
-            val durationLow = expiry.registerD
-            if (maxOf(now, durationLow + 1, window) > 15) throw PatchException("The post job keeps its times above v15")
+        // A kotlin.time.Duration of the chosen seconds: nanoseconds, left-shifted by one (the unit bit).
+        val duration = delay.toLong() * 1_000_000_000L shl 1
 
-            // A kotlin.time.Duration is its nanoseconds shifted left by one.
-            val duration = delay * 1_000_000_000L shl 1
+        mutableClassDefBy(classDefBy { classDef -> classDef.methods.any(::createsJob) }).methods.single(::createsJob).apply {
+            val create = instructions.first {
+                it.opcode == Opcode.NEW_INSTANCE && it.getReference<TypeReference>()?.type == queued
+            }.location.index
 
-            val index = noWindow.location.index
-            replaceInstruction(index, "const-wide v$durationLow, ${duration}L")
+            // Queued(undoUntil: Instant?) — the Instant the constructor receives.
+            val constructor = instructions.first { instruction ->
+                instruction.location.index > create && instruction.opcode == Opcode.INVOKE_DIRECT &&
+                    instruction.getReference<MethodReference>()?.let { it.definingClass == queued && it.name == "<init>" } == true
+            }
+            val reference = constructor.getReference<MethodReference>()!!
+            if (reference.parameterTypes.map { it.toString() } != listOf(INSTANT)) {
+                throw PatchException("Queued is no longer constructed from a single Instant")
+            }
+            val window = (constructor as FiveRegisterInstruction).registerD
+
+            // Instant's millisecond factory, as the app itself calls it in this method; reused so an
+            // obfuscated name does not matter.
+            val fromEpochMilliseconds = instructions.first { it.isFromEpochMilliseconds() }.getReference<MethodReference>()!!
+
+            // One free pair, reused: first to hold the current time, then the delay to add to it.
+            val insertAt = constructor.location.index
+            val free = buildList {
+                val provider = getFreeRegisterProvider(insertAt, 8)
+                while (provider.hasFreeRegisters()) add(provider.getFreeRegister())
+            }.sorted()
+            val scratch = free.firstOrNull { it != window && it + 1 != window && it + 1 in free }
+                ?: throw PatchException("No free register pair for the undo time")
+            if (maxOf(scratch + 1, window) > 15) throw PatchException("The queued post keeps its registers above v15")
+
             addInstructions(
-                index + 1,
+                insertAt,
                 """
-                invoke-virtual { v$now, v$durationLow, v${durationLow + 1} }, ${plus.definingClass}->${plus.name}(J)${plus.returnType}
+                invoke-static { }, Ljava/lang/System;->currentTimeMillis()J
+                move-result-wide v$scratch
+                invoke-static { v$scratch, v${scratch + 1} }, ${fromEpochMilliseconds.definingClass}->${fromEpochMilliseconds.name}(J)$INSTANT
+                move-result-object v$window
+                const-wide v$scratch, ${duration}L
+                invoke-virtual { v$window, v$scratch, v${scratch + 1} }, $INSTANT->${plus.name}(J)$INSTANT
                 move-result-object v$window
                 """,
             )
-
-            // The app reuses that null for another type after the job is queued, so it is put
-            // back once the window is handed over.
-            val queuedWithWindow = instructions.first { instruction ->
-                instruction.location.index > index && instruction.opcode == Opcode.INVOKE_DIRECT &&
-                    instruction.getReference<MethodReference>()?.let { it.definingClass == queued && it.name == "<init>" } == true
-            }.location.index
-            addInstructions(queuedWithWindow + 1, "const/4 v$window, 0x0")
         }
     }
 }
