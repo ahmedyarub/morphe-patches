@@ -1,3 +1,9 @@
+## [1.14.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.14.0...v1.14.1) (2026-10-11)
+
+### 🐛 Bug Fixes
+
+* **X:** Support 12.33.1 and adapt Enable Undo Posts to the new upload store ([ef43818](https://github.com/ahmedyarub/morphe-patches/commit/ef438185f07bacf596bc8326807df6422fa67cfd))
+
 ## [1.14.1-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.14.0...v1.14.1-dev.1) (2026-10-11)
 
 ### 🐛 Bug Fixes
