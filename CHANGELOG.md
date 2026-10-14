@@ -1,3 +1,14 @@
+## [1.15.0](https://github.com/ahmedyarub/morphe-patches/compare/v1.14.1...v1.15.0) (2026-10-14)
+
+### 🐛 Bug Fixes
+
+* **Instagram:** Only auto-answer the Not Interested reasons popup ([4352215](https://github.com/ahmedyarub/morphe-patches/commit/4352215ef1f78a01c9c63416af2022f24e2ab66f))
+* **X:** Support 12.34.0 ([f438472](https://github.com/ahmedyarub/morphe-patches/commit/f43847299d060e80206cec5f8d79c3a5617658f7))
+
+### ✨ New Features
+
+* **Instagram:** Support 451.0.0.53.80 ([45e0382](https://github.com/ahmedyarub/morphe-patches/commit/45e0382a4297b1942ed7a2eebcd37f72235b66c5))
+
 ## [1.15.0-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.14.2-dev.1...v1.15.0-dev.1) (2026-10-14)
 
 ### 🐛 Bug Fixes
