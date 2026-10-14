@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-10-11T12:38:46",
-  "description": "## [1.14.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.14.0...v1.14.1) (2026-10-11)\n\n### 🐛 Bug Fixes\n\n* **X:** Support 12.33.1 and adapt Enable Undo Posts to the new upload store ([ef43818](https://github.com/ahmedyarub/morphe-patches/commit/ef438185f07bacf596bc8326807df6422fa67cfd))",
-  "download_url": "https://github.com/ahmedyarub/morphe-patches/releases/download/v1.14.1/patches-1.14.1.mpp",
+  "created_at": "2026-10-14T09:29:45",
+  "description": "## [1.14.2-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.14.1...v1.14.2-dev.1) (2026-10-14)\n\n### 🐛 Bug Fixes\n\n* **X:** Support 12.34.0 ([f438472](https://github.com/ahmedyarub/morphe-patches/commit/f43847299d060e80206cec5f8d79c3a5617658f7))",
+  "download_url": "https://github.com/ahmedyarub/morphe-patches/releases/download/v1.14.2-dev.1/patches-1.14.2-dev.1.mpp",
   "signature_download_url": "",
-  "version": "1.14.1"
+  "version": "1.14.2-dev.1"
 }

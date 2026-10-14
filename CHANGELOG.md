@@ -1,3 +1,9 @@
+## [1.14.2-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.14.1...v1.14.2-dev.1) (2026-10-14)
+
+### 🐛 Bug Fixes
+
+* **X:** Support 12.34.0 ([f438472](https://github.com/ahmedyarub/morphe-patches/commit/f43847299d060e80206cec5f8d79c3a5617658f7))
+
 ## [1.14.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.14.0...v1.14.1) (2026-10-11)
 
 ### 🐛 Bug Fixes
