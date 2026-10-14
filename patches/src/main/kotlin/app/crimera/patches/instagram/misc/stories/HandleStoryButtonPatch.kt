@@ -27,10 +27,12 @@ import app.morphe.util.registersUsed
 import com.android.tools.smali.dexlib2.Opcode
 import app.morphe.library.instagram.patches.instagramExtensionPatch
 
-// The method is obfuscated but this is where it adds buttons.
+// The method is obfuscated but this is where it adds buttons. From 451 the "[INTERNAL] ..." debug
+// entries piko anchored on are added by a separate helper, so the action sheet module names it
+// logs are used instead; they are in this method in 450 and 451 alike.
 object AddStoryButtonFingerprint : Fingerprint(
     returnType = "[Ljava/lang/CharSequence;",
-    strings = listOf("[INTERNAL] Pause Playback"),
+    strings = listOf("story_highlight_action_sheet", "location_story_action_sheet"),
     custom = { methodDef, _ ->
         methodDef.parameters.size == 1
     },
