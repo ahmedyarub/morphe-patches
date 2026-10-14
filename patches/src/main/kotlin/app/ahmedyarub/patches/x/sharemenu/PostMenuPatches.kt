@@ -115,11 +115,12 @@ internal val postMenuPatch = bytecodePatch(
         mutableClassDefBy(handler).methods.single { method ->
             method.name == "invoke" && method.parameterTypes.map { it.toString() } == listOf("Ljava/lang/Object;")
         }.apply {
-            // The first menu visibility state the handler reads is the one a selection clears.
+            // The first menu visibility state the handler reads is the one a selection clears. The
+            // state's (minified) MutableState type changes between versions, so it is read off the field.
             val visibility = instructions.firstNotNullOfOrNull { instruction ->
                 instruction.getReference<FieldReference>()?.takeIf {
                     instruction.opcode == Opcode.IGET_OBJECT && it.definingClass == handler.type &&
-                        it.type == "Landroidx/compose/runtime/l1;"
+                        it.type.startsWith("Landroidx/compose/runtime/")
                 }
             } ?: throw PatchException("The post menu handler never reads the menu's visibility")
 
@@ -136,7 +137,7 @@ internal val postMenuPatch = bytecodePatch(
                 if-eqz v1, :original
                 iget-object v1, v0, $visibility
                 sget-object v2, Ljava/lang/Boolean;->FALSE:Ljava/lang/Boolean;
-                invoke-interface { v1, v2 }, Landroidx/compose/runtime/l1;->setValue(Ljava/lang/Object;)V
+                invoke-interface { v1, v2 }, ${visibility.type}->setValue(Ljava/lang/Object;)V
                 sget-object v0, Lkotlin/Unit;->a:Lkotlin/Unit;
                 return-object v0
                 """,
