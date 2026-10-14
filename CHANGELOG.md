@@ -1,3 +1,9 @@
+## [1.16.0-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.15.0...v1.16.0-dev.1) (2026-10-14)
+
+### ✨ New Features
+
+* **Instagram:** Add "Only organic stories" to Filter stories ([8857a63](https://github.com/ahmedyarub/morphe-patches/commit/8857a6378810a771ecd36765c289a308a0387441))
+
 ## [1.15.0](https://github.com/ahmedyarub/morphe-patches/compare/v1.14.1...v1.15.0) (2026-10-14)
 
 ### 🐛 Bug Fixes
