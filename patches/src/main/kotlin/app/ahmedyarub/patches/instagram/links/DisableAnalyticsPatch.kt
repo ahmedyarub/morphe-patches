@@ -21,11 +21,14 @@ import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 
 /**
- * Every request the app makes passes through here, and the class name is not obfuscated.
+ * Every request the app makes passes through here, and the class name is not obfuscated. Until
+ * 450 this was startRequest itself; from 451 startRequest only wraps startRequestInternal in a
+ * trace section and the URI checks live there. The "URL has no host" check marks the method that
+ * reads the request URI in both layouts.
  */
 internal object TigonServiceLayerStartRequestFingerprint : Fingerprint(
     definingClass = "Lcom/instagram/api/tigon/TigonServiceLayer;",
-    name = "startRequest",
+    strings = listOf("URL has no host"),
 )
 
 @Suppress("unused")

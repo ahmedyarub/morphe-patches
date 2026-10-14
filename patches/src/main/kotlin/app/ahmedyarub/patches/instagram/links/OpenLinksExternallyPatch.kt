@@ -22,9 +22,11 @@ import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 
+// From 451 "TrackingInfo.ARG_MODULE_NAME" comes out of a string pool rather than a literal, so the
+// Facebook-store fallback key, a literal in this method in 450 and 451 alike, is used instead.
 internal object InAppBrowserFunctionFingerprint : Fingerprint(
     returnType = "Z",
-    strings = listOf("Tracking.ARG_CLICK_SOURCE", "TrackingInfo.ARG_MODULE_NAME"),
+    strings = listOf("Tracking.ARG_CLICK_SOURCE", "browser_tried_open_fb_store"),
 )
 
 @Suppress("unused")

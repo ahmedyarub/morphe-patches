@@ -20,7 +20,7 @@ private const val MENU_REORDER_CLASS = "Lapp/ahmedyarub/extension/instagram/Menu
  * menu model and hands it to the sheet adapter. Anchored on the analytics string
  * "overflow_bottom_sheet" which appears only in this presenter.
  */
-private object OverflowSheetPresenterFingerprint : Fingerprint(
+internal object OverflowSheetPresenterFingerprint : Fingerprint(
     strings = listOf("overflow_bottom_sheet"),
 )
 
