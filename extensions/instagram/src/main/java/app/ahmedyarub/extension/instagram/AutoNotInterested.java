@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.TextView;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +17,37 @@ import app.morphe.extension.shared.Logger;
 @SuppressWarnings("unused")
 public final class AutoNotInterested {
 
+    private static final String NOT_INTERESTED_ACTION = "not_interested";
+    private static final String SHEET_HEADER_ID = "action_sheet_header_text_view";
+
+    /** The localized label of the overflow menu's Not Interested option, which titles the reasons popup. */
+    private static volatile String notInterestedLabel;
+
     private AutoNotInterested() {
+    }
+
+    /**
+     * Called with the overflow menu's options as it is presented. Each option holds its action
+     * id ("not_interested") and its label in String fields.
+     */
+    public static void onMenuOptions(List<Object> options) {
+        try {
+            if (options == null) return;
+            for (Object option : options) {
+                List<String> strings = new ArrayList<>();
+                for (Field field : option.getClass().getDeclaredFields()) {
+                    if (field.getType() != String.class) continue;
+                    field.setAccessible(true);
+                    Object value = field.get(option);
+                    if (value != null) strings.add((String) value);
+                }
+                if (!strings.remove(NOT_INTERESTED_ACTION) || strings.size() != 1) continue;
+                notInterestedLabel = strings.get(0);
+                return;
+            }
+        } catch (Throwable ex) {
+            Logger.printException(() -> "AutoNI: onMenuOptions failed", ex);
+        }
     }
 
     public static void onActionSheetCreated(Object fragment) {
@@ -33,9 +64,9 @@ public final class AutoNotInterested {
                     List<TextView> textViews = new ArrayList<>();
                     collectTextViews(rootView, textViews);
 
-                    // The overflow menu has 15+ texts (items + "New" badges).
-                    // The reasons popup has ~8 texts (header + reasons + undo).
-                    if (textViews.size() > 10 || textViews.size() < 3) return;
+                    // Only the reasons popup is titled with the Not Interested label. Other
+                    // sheets, such as the story options menu, must be left alone.
+                    if (!isReasonsPopup(textViews)) return;
 
                     fired = true;
                     rootView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
@@ -50,6 +81,19 @@ public final class AutoNotInterested {
         } catch (Throwable ex) {
             Logger.printException(() -> "AutoNI: onActionSheetCreated failed", ex);
         }
+    }
+
+    private static boolean isReasonsPopup(List<TextView> textViews) {
+        String label = notInterestedLabel;
+        if (label == null || textViews.size() < 2) return false;
+        TextView header = textViews.get(0);
+        if (header.getId() == View.NO_ID) return false;
+        try {
+            if (!SHEET_HEADER_ID.equals(header.getResources().getResourceEntryName(header.getId()))) return false;
+        } catch (Throwable ex) {
+            return false;
+        }
+        return label.contentEquals(header.getText());
     }
 
     private static void simulateTap(View view) {
