@@ -40,14 +40,17 @@ public final class StoryTray {
     }
 
     public static void addStoryIfNotBlocked(List<Object> stories, Object story, String reelTypeFieldName) {
-        if (story != null && onlyOrganicStories()) {
+        if (story != null) {
             try {
-                String reason = nonOrganicReason(story, reelTypeFieldName);
+                String reason = droppedReason(story, reelTypeFieldName);
                 if (reason != null) {
                     Log.d(TAG, "Dropped tray item: " + reason);
                     return;
                 }
             } catch (Throwable ex) {
+                // Fails open. The check reads the same reel-type field as the library filter
+                // below, so a failure here is not specific to one item: failing closed would
+                // empty the whole tray rather than drop a card.
                 if (!failureLogged) {
                     failureLogged = true;
                     Logger.printException(() -> "Could not check a story tray item of "
@@ -68,13 +71,16 @@ public final class StoryTray {
         }
     }
 
-    /** Why the item is not an organic story, or null if it is one. */
-    private static String nonOrganicReason(Object story, String reelTypeFieldName) throws Exception {
+    /**
+     * Why the item is dropped, or null to hand it to the library filter. Injected units are
+     * always dropped; with "Only organic stories" so is every reel type people do not post.
+     */
+    private static String droppedReason(Object story, String reelTypeFieldName) throws Exception {
         Field typeField = story.getClass().getDeclaredField(reelTypeFieldName);
         typeField.setAccessible(true);
         Object type = typeField.get(story);
         String typeName = type == null ? null : type.toString();
-        if (!ORGANIC_REEL_TYPES.contains(typeName)) return "type " + typeName;
+        if (onlyOrganicStories() && !ORGANIC_REEL_TYPES.contains(typeName)) return "type " + typeName;
 
         // Injected units (prompts, music and Threads cards, suggested users or products, ads)
         // carry their payload in a field of a netego, suggestion or ad schema type, whose names
