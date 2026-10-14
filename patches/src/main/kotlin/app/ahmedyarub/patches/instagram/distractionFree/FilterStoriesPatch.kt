@@ -11,9 +11,17 @@
 package app.ahmedyarub.patches.instagram.distractionFree
 
 import app.ahmedyarub.patches.shared.Constants.COMPATIBILITY_INSTAGRAM
+import app.morphe.library.instagram.patches.blockUrl
 import app.morphe.library.instagram.patches.filterStories
+import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.util.returnEarly
+
+private object OnlyOrganicStoriesFingerprint : Fingerprint(
+    definingClass = "Lapp/ahmedyarub/extension/instagram/StoryTray;",
+    name = "onlyOrganicStories",
+)
 
 @Suppress("unused")
 val filterStoriesPatch = bytecodePatch(
@@ -23,7 +31,16 @@ val filterStoriesPatch = bytecodePatch(
 ) {
     compatibleWith(COMPATIBILITY_INSTAGRAM)
 
-    dependsOn(filterStoriesTrayHook)
+    dependsOn(filterStoriesTrayHook, blockUrlHook)
+
+    val onlyOrganic by booleanOption(
+        key = "onlyOrganicStories",
+        default = true,
+        title = "Only organic stories",
+        description = "Shows only stories people posted: their own stories, close friends, shared and " +
+            "collab stories, lives and subscriber stories. Hides every suggestion, prompt, music and " +
+            "ad card Instagram adds to the tray or injects while watching, whatever the options below say.",
+    )
 
     val hideAds by booleanOption(
         key = "hideAdsStories",
@@ -56,6 +73,13 @@ val filterStoriesPatch = bytecodePatch(
     )
 
     execute {
+        if (onlyOrganic == true) {
+            OnlyOrganicStoriesFingerprint.method.returnEarly(true)
+            // Ads and suggestion cards inserted between stories while watching are fetched
+            // separately from the tray.
+            blockUrl("/feed/injected_reels_media/")
+        }
+
         if (hideAds == true) filterStories("ads_reel")
 
         if (hideSuggested == true) filterStories(
