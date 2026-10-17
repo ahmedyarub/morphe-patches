@@ -1,3 +1,9 @@
+## [1.16.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.16.0...v1.16.1) (2026-10-17)
+
+### 🐛 Bug Fixes
+
+* **X:** Support 12.35.0 and find the bandwidth estimate wherever it is read ([7c5e3a7](https://github.com/ahmedyarub/morphe-patches/commit/7c5e3a7ee2f876fc0009f21bc1ad78589f419fca))
+
 ## [1.16.1-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.16.0...v1.16.1-dev.1) (2026-10-17)
 
 ### 🐛 Bug Fixes
