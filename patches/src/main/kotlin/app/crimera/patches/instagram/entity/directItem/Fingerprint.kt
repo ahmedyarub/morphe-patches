@@ -43,7 +43,9 @@ internal object FieldXmaExtension : Fingerprint(name = "fieldXma", definingClass
 internal object FieldXmaLinkExtension : Fingerprint(name = "fieldXmaLink", definingClass = DIRECT_ITEM_CLASS)
 
 // The parser; named because the item's serializer (A00) writes the same keys.
+// The DirectItem JSON parser class. From 452 its keys are read in a per-field helper rather than in
+// unsafeParseFromJson itself, so any method of a class declaring unsafeParseFromJson matches.
 internal object DirectItemDispatchFingerprint : Fingerprint(
-    name = "unsafeParseFromJson",
     strings = listOf("item_id", "user_id", "text", "timestamp", "hide_in_thread", "thread_key"),
+    custom = { _, classDef -> classDef.methods.any { it.name == "unsafeParseFromJson" } },
 )

@@ -6,7 +6,6 @@
 
 package app.crimera.patches.instagram.entity.decoder
 
-import app.crimera.patches.instagram.entity.mediadata.AslSessionRelatedFingerprint
 import app.crimera.patches.instagram.utils.Constants.EDIT_MEDIA_INFO_FRAGMENT_CLASS
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
@@ -35,7 +34,9 @@ val decoderEntity =
         description = "This patch is used hold class and field names that are commonly used",
     ) {
         execute {
-            MEDIA_CLASS_NAME = AslSessionRelatedFingerprint.method.parameters[0].type
+            // piko took the media class from the first parameter of the asl session logger. The
+            // class keeps its name, and from 452 that logger takes an obfuscated interface instead.
+            MEDIA_CLASS_NAME = "Lcom/instagram/feed/media/Media;"
 
             // The carousel index lives on a helper object the fragment holds. piko reads it
             // from the first IGET in the fragment's media id getter, but 446 rewrote that
