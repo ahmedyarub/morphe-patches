@@ -32,6 +32,21 @@ dependencies {
     testRuntimeOnly(libs.junit.platform.launcher)
 }
 
+// JUnit 6 needs Java 17. Only the tests move to it; the bundle keeps the Java target the Morphe
+// patches plugin sets, since Morphe loads its classes.
+listOf("testCompileClasspath", "testRuntimeClasspath").forEach { name ->
+    configurations.named(name) {
+        attributes.attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, 17)
+    }
+}
+tasks.named<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>("compileTestKotlin") {
+    compilerOptions.jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+}
+tasks.named<JavaCompile>("compileTestJava") {
+    sourceCompatibility = "17"
+    targetCompatibility = "17"
+}
+
 tasks {
     val jar = named<Jar>("jar")
 
