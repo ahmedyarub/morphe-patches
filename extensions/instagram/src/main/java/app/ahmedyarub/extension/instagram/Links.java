@@ -14,7 +14,6 @@ import android.net.Uri;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
-import java.util.Collections;
 
 import app.morphe.extension.shared.Logger;
 import app.morphe.extension.shared.ShareLinkSanitizer;
@@ -29,9 +28,11 @@ public final class Links {
      */
     private static final ShareLinkSanitizer SANITIZER = new ShareLinkSanitizer(
             "instagram.com",
-            // The carousel slide a post link opens on.
-            Collections.singletonList("img_index"),
-            Arrays.asList("igsh", "igsi", "utm_source", "utm_medium", "utm_content", "fbclid", "si"));
+            // The comment a post or reel link opens on, the carousel slide, and the story in a
+            // highlight. Instagram builds links such as /reel/<code>?comment_id=<id>&open_comments=true.
+            Arrays.asList("comment_id", "img_index", "open_comments", "story_media_id"),
+            Arrays.asList("igsh", "igsi", "utm_source", "utm_medium", "utm_content", "fbclid", "si",
+                    "stkn", "mdxt", "cplk", "obrf", "vrfl", "rpxt"));
 
     /** The hosts Instagram routes outbound links through, with the destination in "u". */
     private static final java.util.Set<String> LINK_REDIRECT_HOSTS =
