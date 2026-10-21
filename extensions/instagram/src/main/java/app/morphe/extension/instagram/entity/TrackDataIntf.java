@@ -8,29 +8,28 @@
 package app.morphe.extension.instagram.entity;
 
 import java.util.Map;
-import com.instagram.api.schemas.MusicInfo;
 
+/**
+ * A media's licensed music track, wrapping its MusicInfo. The two getter names below are
+ * placeholders the patch replaces with the obfuscated names of this build.
+ */
 public class TrackDataIntf extends Entity implements AudioMediaInterface {
     private final Object obj;
 
-    public TrackDataIntf(Object obj) {
-        super(obj);
-        this.obj = obj;
+    public TrackDataIntf(Object musicInfo) {
+        super(musicInfo);
+        this.obj = musicInfo;
     }
 
-    private Object getMusicInfo() throws Exception {
-        Object mediatorObject = super.getField("A02");
-        return (MusicInfo) super.getMethod(mediatorObject,"getValue");
-    }
-
+    // Public lookups: the map getter is declared on TrackData's parent interface and may be
+    // implemented by a base class rather than by the track data's own class.
     private Object getTrackData() throws Exception {
-        return super.getMethod(this.getMusicInfo(), "CJN");
+        return this.obj.getClass().getMethod("trackDataGetter").invoke(this.obj);
     }
 
     public Map getMappings() throws Exception {
         Object trackData = this.getTrackData();
-        Map trackMap = (Map) super.getMethod(trackData, "Gkh");
-        return trackMap;
+        return (Map) trackData.getClass().getMethod("mapGetter").invoke(trackData);
     }
 
     private Object getValue(String key) throws Exception {

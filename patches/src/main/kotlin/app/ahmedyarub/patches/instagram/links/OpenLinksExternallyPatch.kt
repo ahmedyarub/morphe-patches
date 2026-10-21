@@ -12,6 +12,7 @@ import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
+import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.patcher.util.smali.ExternalLabel
@@ -21,13 +22,27 @@ import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import com.android.tools.smali.dexlib2.iface.reference.StringReference
 
 // From 451 "TrackingInfo.ARG_MODULE_NAME" comes out of a string pool rather than a literal, so the
 // Facebook-store fallback key, a literal in this method in 450 and 451 alike, is used instead.
+// From 452 the method returns how the link was launched, an enum, rather than a boolean.
 internal object InAppBrowserFunctionFingerprint : Fingerprint(
-    returnType = "Z",
     strings = listOf("Tracking.ARG_CLICK_SOURCE", "browser_tried_open_fb_store"),
 )
+
+/** The constant of the [enumType] enum named [name], as the field its <clinit> stores it in. */
+context(context: BytecodePatchContext)
+private fun launchResult(enumType: String, name: String): String {
+    val initializer = context.classDefBy(enumType).methods.single { it.name == "<clinit>" }
+        .implementation!!.instructions.toList()
+    val nameIndex = initializer.indexOfFirst { it.getReference<StringReference>()?.string == name }
+    if (nameIndex < 0) throw PatchException("$enumType has no $name constant")
+
+    val field = initializer.drop(nameIndex).first { it.opcode == Opcode.SPUT_OBJECT }
+        .getReference<FieldReference>()!!
+    return "${field.definingClass}->${field.name}:${field.type}"
+}
 
 @Suppress("unused")
 val openLinksExternallyPatch = bytecodePatch(
@@ -67,15 +82,25 @@ val openLinksExternallyPatch = bytecodePatch(
             val urlRegister = getInstruction<TwoRegisterInstruction>(urlReadIndex).registerA
             val freeRegister = findFreeRegister(urlReadIndex + 1)
 
-            // openExternally returns true when it launched the system browser, in which case we
-            // return true so the in-app browser is skipped; false leaves the original path intact.
+            // openExternally returns true when it launched the system browser, in which case the
+            // method reports the link as handled so the in-app browser is skipped; false leaves the
+            // original path intact. Handled is true up to 451 and EXTERNAL_BROWSER from 452.
+            val handled =
+                if (returnType == "Z") {
+                    "return v$freeRegister"
+                } else {
+                    """
+                    sget-object v$freeRegister, ${launchResult(returnType, "EXTERNAL_BROWSER")}
+                    return-object v$freeRegister
+                    """
+                }
             addInstructionsWithLabels(
                 urlReadIndex + 1,
                 """
                     invoke-static/range { v$urlRegister .. v$urlRegister }, $LINKS_CLASS->openExternally(Ljava/lang/String;)Z
                     move-result v$freeRegister
                     if-eqz v$freeRegister, :in_app
-                    return v$freeRegister
+                    $handled
                 """,
                 ExternalLabel("in_app", instructions.elementAt(urlReadIndex + 1)),
             )

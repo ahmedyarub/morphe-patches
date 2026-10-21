@@ -281,13 +281,20 @@ public class MediaData extends Entity {
         return null;
     }
 
+    /**
+     * The media's music, from the first of its two music-carrying models that has one. The
+     * strings are placeholders the patch replaces, in order: each model's getter on the media,
+     * then its MusicInfo getter.
+     */
     private TrackDataIntf getTrackDataIntf() throws Exception {
-        Class<?> helperClass = this.getHelperClass();
-        Object result = super.getMethod(helperClass, "A0F", this.obj);
-        if (result != null) {
-            return new TrackDataIntf(result);
-        }
-        return null;
+        Object musicInfo = musicInfoOf("firstMusicModelGetter", "firstMusicInfoGetter");
+        if (musicInfo == null) musicInfo = musicInfoOf("secondMusicModelGetter", "secondMusicInfoGetter");
+        return musicInfo == null ? null : new TrackDataIntf(musicInfo);
+    }
+
+    private Object musicInfoOf(String modelGetter, String musicInfoGetter) throws Exception {
+        Object model = super.getMethod(this.obj, modelGetter);
+        return model == null ? null : model.getClass().getMethod(musicInfoGetter).invoke(model);
     }
 
     public AudioMediaInterface getAudioMedia() throws Exception {
