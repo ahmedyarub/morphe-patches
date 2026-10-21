@@ -8,6 +8,8 @@ package app.crimera.patches.instagram.misc.dm.saveMessages
 
 import app.crimera.patches.instagram.utils.Constants.PATCHES_DESCRIPTOR
 import app.morphe.patcher.Fingerprint
+import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
+import com.android.tools.smali.dexlib2.iface.reference.StringReference
 
 private const val HOOK_EXTENSION_CLASS = "$PATCHES_DESCRIPTOR/dm/SavedMessagesHook;"
 
@@ -25,10 +27,18 @@ internal object OpenThreadConverterMethodExtension :
 internal object OpenThreadIdFieldExtension :
     Fingerprint(name = "openThreadIdField", definingClass = HOOK_EXTENSION_CLASS)
 
-// The parser; named because the item's serializer (A00) writes the same keys.
+// The parser; named because the item's serializer (A00) writes the same keys. From 452 the keys are
+// read in a per-field helper of the parser class, so the class rather than the method holds them.
 internal object DirectItemFieldParserFingerprint : Fingerprint(
     name = "unsafeParseFromJson",
-    strings = listOf("item_id", "hide_in_thread"),
+    custom = { _, classDef ->
+        classDef.methods.any { method ->
+            val strings = method.implementation?.instructions?.mapNotNull {
+                (it as? ReferenceInstruction)?.reference as? StringReference
+            }?.map { it.string }.orEmpty()
+            "item_id" in strings && "hide_in_thread" in strings
+        }
+    },
 )
 
 // Stand-in for the retention period the patch option sets.

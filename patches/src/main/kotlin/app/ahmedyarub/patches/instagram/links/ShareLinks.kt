@@ -9,6 +9,7 @@
 package app.ahmedyarub.patches.instagram.links
 
 import app.ahmedyarub.patches.shared.indicesOfString
+import app.ahmedyarub.patches.shared.loadedStrings
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
@@ -21,9 +22,12 @@ import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 
 internal const val LINKS_CLASS = "Lapp/ahmedyarub/extension/instagram/Links;"
 
+/** The permalink URL parser. On 452 the XDTPermalinkResponse name it reports is pooled. */
 internal object PermalinkResponseJsonParserFingerprint : Fingerprint(
-    strings = listOf("XDTPermalinkResponse"),
-    custom = { methodDef, _ -> methodDef.name.lowercase().contains("parsefromjson") },
+    custom = { methodDef, _ ->
+        methodDef.name.lowercase().contains("parsefromjson") &&
+            "XDTPermalinkResponse" in methodDef.loadedStrings
+    },
 )
 
 /**

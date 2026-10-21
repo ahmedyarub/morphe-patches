@@ -1,3 +1,15 @@
+## [1.17.0-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.16.1...v1.17.0-dev.1) (2026-10-21)
+
+### 🐛 Bug Fixes
+
+* **Instagram:** Adapt Download media and Save deleted messages to 452 ([9ab35fa](https://github.com/ahmedyarub/morphe-patches/commit/9ab35fa4250d1a4cf68f66b6ebca6f44b17595e1))
+* **Instagram:** Adapt Open links externally and Sanitize share links to 452 ([cb074f9](https://github.com/ahmedyarub/morphe-patches/commit/cb074f9873ba2f77a9bcb674f1b59402eb838d35))
+
+### ✨ New Features
+
+* **Instagram:** Support 452.0.0.48.64 ([5350c37](https://github.com/ahmedyarub/morphe-patches/commit/5350c3765f5ea746fa6723e527411a9825b96614))
+* **X:** Support 12.36.1-prod.01 ([47e7ebe](https://github.com/ahmedyarub/morphe-patches/commit/47e7ebeb4c659ae4cb1d7fe5b02164ddcab37fcf))
+
 ## [1.16.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.16.0...v1.16.1) (2026-10-17)
 
 ### 🐛 Bug Fixes
