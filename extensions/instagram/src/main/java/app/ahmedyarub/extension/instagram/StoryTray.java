@@ -77,28 +77,35 @@ public final class StoryTray {
 
     /** Why a tray item is dropped, or null to keep it. Items of other types are kept. */
     private static String trayItemDropReason(Object item) throws Exception {
-        Class<?> intf = trayItemInterface(item.getClass());
-        if (intf == null) return null;
+        Class<?> intf = Class.forName(TRAY_ITEM_INTERFACE, false, item.getClass().getClassLoader());
+        if (!intf.isInstance(item)) return null;
         resolveTrayItemGetters(intf);
 
         for (Method getter : trayItemPayloadGetters) {
             if (getter.invoke(item) != null) return "carrying " + getter.getReturnType().getSimpleName();
         }
-        if (onlyOrganicStories() && trayItemTypeGetter != null) {
-            Object type = trayItemTypeGetter.invoke(item);
-            // An item without a type is kept: nothing marks it as injected.
-            if (type != null && !ORGANIC_REEL_TYPES.contains(type.toString())) return "type " + type;
-        }
+        if (trayItemTypeGetter == null) return null;
+        Object type = trayItemTypeGetter.invoke(item);
+        // An item without a type is kept: nothing marks it as injected.
+        if (type == null) return null;
+        String typeName = type.toString();
+        if (onlyOrganicStories() && !ORGANIC_REEL_TYPES.contains(typeName)) return "type " + typeName;
+        // The categories blocked by the other Filter stories options, as the tray parser applies them.
+        if (blockedStoryTypes().contains(typeName)) return "blocked type " + typeName;
         return null;
     }
 
-    private static Class<?> trayItemInterface(Class<?> type) {
-        for (Class<?> c = type; c != null; c = c.getSuperclass()) {
-            for (Class<?> intf : c.getInterfaces()) {
-                if (intf.getName().equals(TRAY_ITEM_INTERFACE)) return intf;
-            }
+    private static volatile Set<String> blockedStoryTypes;
+
+    /** The reel types the Filter stories options block, which the patch fills in the library. */
+    @SuppressWarnings("unchecked")
+    private static Set<String> blockedStoryTypes() throws Exception {
+        if (blockedStoryTypes == null) {
+            Field field = FilterStoriesListPatch.class.getDeclaredField("BLOCKED_STORY_TYPES");
+            field.setAccessible(true);
+            blockedStoryTypes = (Set<String>) field.get(null);
         }
-        return null;
+        return blockedStoryTypes;
     }
 
     /**
