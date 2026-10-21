@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-10-21T10:50:43",
-  "description": "## [1.18.0-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.17.0...v1.18.0-dev.1) (2026-10-21)\n\n### ✨ New Features\n\n* **Instagram:** Filter suggested stories where the reel store takes them in ([99f814d](https://github.com/ahmedyarub/morphe-patches/commit/99f814d3b66d42da15f2fe80e95046e68ad4ce57))",
-  "download_url": "https://github.com/ahmedyarub/morphe-patches/releases/download/v1.18.0-dev.1/patches-1.18.0-dev.1.mpp",
+  "created_at": "2026-10-21T11:07:56",
+  "description": "## [1.18.0-dev.2](https://github.com/ahmedyarub/morphe-patches/compare/v1.18.0-dev.1...v1.18.0-dev.2) (2026-10-21)\n\n### 🐛 Bug Fixes\n\n* **Instagram:** Apply the Filter stories category options in the store filter ([620fda8](https://github.com/ahmedyarub/morphe-patches/commit/620fda8fd5eefb6815bef947b820d826f9140853))",
+  "download_url": "https://github.com/ahmedyarub/morphe-patches/releases/download/v1.18.0-dev.2/patches-1.18.0-dev.2.mpp",
   "signature_download_url": "",
-  "version": "1.18.0-dev.1"
+  "version": "1.18.0-dev.2"
 }

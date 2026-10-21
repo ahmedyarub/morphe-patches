@@ -1,3 +1,9 @@
+## [1.18.0-dev.2](https://github.com/ahmedyarub/morphe-patches/compare/v1.18.0-dev.1...v1.18.0-dev.2) (2026-10-21)
+
+### 🐛 Bug Fixes
+
+* **Instagram:** Apply the Filter stories category options in the store filter ([620fda8](https://github.com/ahmedyarub/morphe-patches/commit/620fda8fd5eefb6815bef947b820d826f9140853))
+
 ## [1.18.0-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.17.0...v1.18.0-dev.1) (2026-10-21)
 
 ### ✨ New Features
