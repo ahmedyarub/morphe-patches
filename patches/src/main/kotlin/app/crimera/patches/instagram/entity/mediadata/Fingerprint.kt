@@ -84,6 +84,18 @@ internal object GetTrackDataIntfExtensionFingerprint : Fingerprint(
     name = "getTrackDataIntf",
 )
 
+internal const val TRACK_DATA_EXTENSION_CLASS_DESCRIPTOR = "${Constants.ENTITY_CLASS}/TrackDataIntf;"
+
+internal object GetTrackDataExtensionFingerprint : Fingerprint(
+    definingClass = TRACK_DATA_EXTENSION_CLASS_DESCRIPTOR,
+    name = "getTrackData",
+)
+
+internal object GetTrackMappingsExtensionFingerprint : Fingerprint(
+    definingClass = TRACK_DATA_EXTENSION_CLASS_DESCRIPTOR,
+    name = "getMappings",
+)
+
 internal object GetMessageAudioUrlExtensionFingerprint : Fingerprint(
     definingClass = EXTENSION_CLASS_DESCRIPTOR,
     name = "getMessageAudioUrl",
@@ -122,11 +134,6 @@ internal object InstagramMainActivityNotificationRelatedFingerprint : Fingerprin
 internal object ImageInfoMapperFingerprint : Fingerprint(
     returnType = "Ljava/util/Map;",
     strings = listOf("additional_candidates", "candidates", "scrubber_spritesheet_info_candidates"),
-)
-
-internal object AslSessionRelatedFingerprint : Fingerprint(
-    returnType = "V",
-    strings = listOf("asl_session_id", "is_video", "is_carousel"),
 )
 
 internal object EditMediaInfoFragmentMediaSizeFingerprint : Fingerprint(

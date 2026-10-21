@@ -159,18 +159,22 @@ val forceHdVideosPatch = bytecodePatch(
         // estimate. With an unlimited estimate the best track always fits; tracks that failed to
         // play are still skipped.
         val selection = AdaptiveTrackSelectionFingerprint.classDef
-        mutableClassDefBy(selection).methods.single { method ->
-            method.returnType == "I" && method.parameterTypes.map { it.toString() } == listOf("J") &&
-                !AccessFlags.STATIC.isSet(method.accessFlags) &&
-                method.implementation?.instructions?.any { instruction ->
-                    instruction.opcode == Opcode.INVOKE_INTERFACE &&
-                        instruction.getReference<MethodReference>()?.let { it.returnType == "J" && it.parameterTypes.isEmpty() } == true
+        // The estimate is read from the selection's bandwidth meter field. Which method reads it
+        // moved in 12.35: Media3 split the ideal-track lookup, (J)I before, into (JJ)I and a ()J
+        // helper that computes the allocated bandwidth. Other no-argument long calls in the class
+        // are made on chunk iterators it is handed, not on its own fields.
+        val fieldTypes = selection.fields.filterNot { AccessFlags.STATIC.isSet(it.accessFlags) }.map { it.type }.toSet()
+        val readsEstimate = { instruction: com.android.tools.smali.dexlib2.iface.instruction.Instruction ->
+            instruction.opcode == Opcode.INVOKE_INTERFACE &&
+                instruction.getReference<MethodReference>()?.let {
+                    it.returnType == "J" && it.parameterTypes.isEmpty() && it.definingClass in fieldTypes
                 } == true
+        }
+        mutableClassDefBy(selection).methods.single { method ->
+            !AccessFlags.STATIC.isSet(method.accessFlags) &&
+                method.implementation?.instructions?.any(readsEstimate) == true
         }.apply {
-            val estimate = instructions.first { instruction ->
-                instruction.opcode == Opcode.INVOKE_INTERFACE &&
-                    instruction.getReference<MethodReference>()?.let { it.returnType == "J" && it.parameterTypes.isEmpty() } == true
-            }.location.index
+            val estimate = instructions.first(readsEstimate).location.index
             val result = instructions[estimate + 1]
             if (result.opcode != Opcode.MOVE_RESULT_WIDE) throw PatchException("The bandwidth estimate is not kept")
 

@@ -1,3 +1,153 @@
+## [1.16.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.16.0...v1.16.1) (2026-10-17)
+
+### 🐛 Bug Fixes
+
+* **X:** Support 12.35.0 and find the bandwidth estimate wherever it is read ([7c5e3a7](https://github.com/ahmedyarub/morphe-patches/commit/7c5e3a7ee2f876fc0009f21bc1ad78589f419fca))
+
+## [1.16.1-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.16.0...v1.16.1-dev.1) (2026-10-17)
+
+### 🐛 Bug Fixes
+
+* **X:** Support 12.35.0 and find the bandwidth estimate wherever it is read ([7c5e3a7](https://github.com/ahmedyarub/morphe-patches/commit/7c5e3a7ee2f876fc0009f21bc1ad78589f419fca))
+
+## [1.16.0](https://github.com/ahmedyarub/morphe-patches/compare/v1.15.0...v1.16.0) (2026-10-14)
+
+### 🐛 Bug Fixes
+
+* **Instagram:** Drop injected story cards with Only organic stories off ([2a08da5](https://github.com/ahmedyarub/morphe-patches/commit/2a08da5eb8c394f48616c8d2d5d44a5f319e6bb1))
+
+### ✨ New Features
+
+* **Instagram:** Add "Only organic stories" to Filter stories ([8857a63](https://github.com/ahmedyarub/morphe-patches/commit/8857a6378810a771ecd36765c289a308a0387441))
+
+## [1.16.0-dev.2](https://github.com/ahmedyarub/morphe-patches/compare/v1.16.0-dev.1...v1.16.0-dev.2) (2026-10-14)
+
+### 🐛 Bug Fixes
+
+* **Instagram:** Drop injected story cards with Only organic stories off ([2a08da5](https://github.com/ahmedyarub/morphe-patches/commit/2a08da5eb8c394f48616c8d2d5d44a5f319e6bb1))
+
+## [1.16.0-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.15.0...v1.16.0-dev.1) (2026-10-14)
+
+### ✨ New Features
+
+* **Instagram:** Add "Only organic stories" to Filter stories ([8857a63](https://github.com/ahmedyarub/morphe-patches/commit/8857a6378810a771ecd36765c289a308a0387441))
+
+## [1.15.0](https://github.com/ahmedyarub/morphe-patches/compare/v1.14.1...v1.15.0) (2026-10-14)
+
+### 🐛 Bug Fixes
+
+* **Instagram:** Only auto-answer the Not Interested reasons popup ([4352215](https://github.com/ahmedyarub/morphe-patches/commit/4352215ef1f78a01c9c63416af2022f24e2ab66f))
+* **X:** Support 12.34.0 ([f438472](https://github.com/ahmedyarub/morphe-patches/commit/f43847299d060e80206cec5f8d79c3a5617658f7))
+
+### ✨ New Features
+
+* **Instagram:** Support 451.0.0.53.80 ([45e0382](https://github.com/ahmedyarub/morphe-patches/commit/45e0382a4297b1942ed7a2eebcd37f72235b66c5))
+
+## [1.15.0-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.14.2-dev.1...v1.15.0-dev.1) (2026-10-14)
+
+### 🐛 Bug Fixes
+
+* **Instagram:** Only auto-answer the Not Interested reasons popup ([4352215](https://github.com/ahmedyarub/morphe-patches/commit/4352215ef1f78a01c9c63416af2022f24e2ab66f))
+
+### ✨ New Features
+
+* **Instagram:** Support 451.0.0.53.80 ([45e0382](https://github.com/ahmedyarub/morphe-patches/commit/45e0382a4297b1942ed7a2eebcd37f72235b66c5))
+
+## [1.14.2-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.14.1...v1.14.2-dev.1) (2026-10-14)
+
+### 🐛 Bug Fixes
+
+* **X:** Support 12.34.0 ([f438472](https://github.com/ahmedyarub/morphe-patches/commit/f43847299d060e80206cec5f8d79c3a5617658f7))
+
+## [1.14.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.14.0...v1.14.1) (2026-10-11)
+
+### 🐛 Bug Fixes
+
+* **X:** Support 12.33.1 and adapt Enable Undo Posts to the new upload store ([ef43818](https://github.com/ahmedyarub/morphe-patches/commit/ef438185f07bacf596bc8326807df6422fa67cfd))
+
+## [1.14.1-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.14.0...v1.14.1-dev.1) (2026-10-11)
+
+### 🐛 Bug Fixes
+
+* **X:** Support 12.33.1 and adapt Enable Undo Posts to the new upload store ([ef43818](https://github.com/ahmedyarub/morphe-patches/commit/ef438185f07bacf596bc8326807df6422fa67cfd))
+
+## [1.14.0](https://github.com/ahmedyarub/morphe-patches/compare/v1.13.0...v1.14.0) (2026-10-10)
+
+### ✨ New Features
+
+* Auto-not-interested, story netego filter, X 12.33.0 compat ([637ecec](https://github.com/ahmedyarub/morphe-patches/commit/637ecec6dc0c5890b8553f54e64d16e2a07ef662))
+* Remove Grok, hide suggested followings, filter Your Turn stories, reorder menu ([96f3902](https://github.com/ahmedyarub/morphe-patches/commit/96f3902959954067eecd4888e1c46ba34dbeffb7))
+
+## [1.14.0-dev.2](https://github.com/ahmedyarub/morphe-patches/compare/v1.14.0-dev.1...v1.14.0-dev.2) (2026-10-10)
+
+### ✨ New Features
+
+* Auto-not-interested, story netego filter, X 12.33.0 compat ([637ecec](https://github.com/ahmedyarub/morphe-patches/commit/637ecec6dc0c5890b8553f54e64d16e2a07ef662))
+
+## [1.14.0-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.13.0...v1.14.0-dev.1) (2026-10-09)
+
+### ✨ New Features
+
+* Remove Grok, hide suggested followings, filter Your Turn stories, reorder menu ([96f3902](https://github.com/ahmedyarub/morphe-patches/commit/96f3902959954067eecd4888e1c46ba34dbeffb7))
+
+## [1.13.0](https://github.com/ahmedyarub/morphe-patches/compare/v1.12.0...v1.13.0) (2026-10-09)
+
+### 🐛 Bug Fixes
+
+* **X:** Fix feed filters — ActionBar overlap, following detection, settings access ([32022eb](https://github.com/ahmedyarub/morphe-patches/commit/32022ebc7ae3e460fb43eaa02227fe2c822528d5))
+
+### ✨ New Features
+
+* **X:** Add feed filters — media only, hide followed, include keywords ([82c5742](https://github.com/ahmedyarub/morphe-patches/commit/82c5742809712bafcf1a38f4277bed8844087b62))
+
+## [1.13.0-dev.2](https://github.com/ahmedyarub/morphe-patches/compare/v1.13.0-dev.1...v1.13.0-dev.2) (2026-10-09)
+
+### 🐛 Bug Fixes
+
+* **X:** Fix feed filters — ActionBar overlap, following detection, settings access ([32022eb](https://github.com/ahmedyarub/morphe-patches/commit/32022ebc7ae3e460fb43eaa02227fe2c822528d5))
+
+## [1.13.0-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.12.0...v1.13.0-dev.1) (2026-10-09)
+
+### ✨ New Features
+
+* **X:** Add feed filters — media only, hide followed, include keywords ([82c5742](https://github.com/ahmedyarub/morphe-patches/commit/82c5742809712bafcf1a38f4277bed8844087b62))
+
+## [1.12.0](https://github.com/ahmedyarub/morphe-patches/compare/v1.11.0...v1.12.0) (2026-10-07)
+
+### ✨ New Features
+
+* **X:** Support 12.32.0-prod.01 ([9310ad6](https://github.com/ahmedyarub/morphe-patches/commit/9310ad6437671be0131b2fcdff7277ed727dd08f))
+
+## [1.12.0-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.11.0...v1.12.0-dev.1) (2026-10-07)
+
+### ✨ New Features
+
+* **X:** Support 12.32.0-prod.01 ([9310ad6](https://github.com/ahmedyarub/morphe-patches/commit/9310ad6437671be0131b2fcdff7277ed727dd08f))
+
+## [1.11.0](https://github.com/ahmedyarub/morphe-patches/compare/v1.10.0...v1.11.0) (2026-10-06)
+
+### ✨ New Features
+
+* **Instagram:** Support 450.0.0.50.77 ([d9f9ccd](https://github.com/ahmedyarub/morphe-patches/commit/d9f9ccdc01222a4457d412bc904bdd10ebc24ec5))
+
+## [1.11.0-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.10.0...v1.11.0-dev.1) (2026-10-06)
+
+### ✨ New Features
+
+* **Instagram:** Support 450.0.0.50.77 ([d9f9ccd](https://github.com/ahmedyarub/morphe-patches/commit/d9f9ccdc01222a4457d412bc904bdd10ebc24ec5))
+
+## [1.10.0](https://github.com/ahmedyarub/morphe-patches/compare/v1.9.0...v1.10.0) (2026-10-02)
+
+### ✨ New Features
+
+* **X:** Support 12.31.0-prod.01 ([b3ba243](https://github.com/ahmedyarub/morphe-patches/commit/b3ba2435e9d80ea2b2346ad9cc63e250767a795f))
+
+## [1.10.0-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.9.0...v1.10.0-dev.1) (2026-10-02)
+
+### ✨ New Features
+
+* **X:** Support 12.31.0-prod.01 ([b3ba243](https://github.com/ahmedyarub/morphe-patches/commit/b3ba2435e9d80ea2b2346ad9cc63e250767a795f))
+
 ## [1.9.0](https://github.com/ahmedyarub/morphe-patches/compare/v1.8.1...v1.9.0) (2026-09-30)
 
 ### 🐛 Bug Fixes

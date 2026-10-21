@@ -45,7 +45,7 @@ internal object Constants {
         appIconColor = 0xE1306C,
         targets = listOf(
             AppTarget(
-                version = "449.0.0.52.84"
+                version = "452.0.0.48.64"
             )
         )
     )
@@ -61,8 +61,23 @@ internal object Constants {
         appIconColor = 0x000000,
         targets = listOf(
             AppTarget(
-                version = "12.30.0-prod.01"
-            )
+                version = "12.32.0-prod.01"
+            ),
+            AppTarget(
+                version = "12.33.0-prod.01"
+            ),
+            AppTarget(
+                version = "12.33.1-prod.01"
+            ),
+            AppTarget(
+                version = "12.34.0-prod.01"
+            ),
+            AppTarget(
+                version = "12.35.0-prod.01"
+            ),
+            AppTarget(
+                version = "12.36.1-prod.01"
+            ),
         )
     )
 }

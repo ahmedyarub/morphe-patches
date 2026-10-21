@@ -11,6 +11,7 @@ import app.crimera.patches.instagram.entity.decoder.MEDIAEXT_CLASS_NAME
 import app.crimera.patches.instagram.entity.decoder.USER_MODEL_CLASS_NAME
 import app.crimera.patches.instagram.entity.decoder.decoderEntity
 import app.crimera.patches.instagram.utils.Constants.MUSIC_INFO_CLASS
+import app.crimera.patches.instagram.utils.Constants.TRACK_DATA_CLASS
 import app.crimera.utils.changeFirstString
 import app.crimera.utils.cacheFieldOrNull
 import app.crimera.utils.changeStringAt
@@ -19,11 +20,13 @@ import app.crimera.utils.fieldExtractor
 import app.crimera.utils.methodExtractor
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
+import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.util.getReference
 import app.morphe.util.indexOfFirstInstruction
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.instruction.WideLiteralInstruction
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import app.morphe.library.instagram.patches.instagramExtensionPatch
@@ -93,13 +96,18 @@ val mediaDataEntity =
                     ?: throw PatchException("Could not identify the video variants getter")
             GetVideoVariantsV1ExtensionFingerprint.changeFirstString(videoVariantsGetter.name)
 
-            // Extracting method is video used in media class.
-            AslSessionRelatedFingerprint.method.apply {
-                val stringIndex = AslSessionRelatedFingerprint.stringMatches[1].index
-                val isVideoVirtualInvokeIndex = indexOfFirstInstruction(stringIndex, Opcode.INVOKE_VIRTUAL)
-                val isVideoCallingMethodName = getInstruction(isVideoVirtualInvokeIndex).methodExtractor().name
-                IsVideoExtensionFingerprint.changeFirstString(isVideoCallingMethodName)
-            }
+            // Extracting method is video used in media class. piko took the getter the asl session
+            // logger calls after "is_video"; from 452 the logger computes it in a lambda. The getter
+            // hands the media to a helper that reads its tree field -1749461646 and that tree's media
+            // type, field 1939875509; no other media getter's helper reads both.
+            val isVideoGetter = classDefBy(MEDIA_CLASS_NAME).methods.singleOrNull { getter ->
+                getter.returnType == "Z" && getter.parameterTypes.isEmpty() &&
+                    getter.implementation?.instructions
+                        ?.singleOrNull { it.opcode == Opcode.INVOKE_STATIC }
+                        ?.getReference<MethodReference>()
+                        ?.let { helper -> readsMediaType(helper) } == true
+            } ?: throw PatchException("Could not identify the media is video getter")
+            IsVideoExtensionFingerprint.changeFirstString(isVideoGetter.name)
 
             // Extraction of the carousel media list getter.
             EditMediaInfoFragmentMediaSizeFingerprint.method.apply {
@@ -145,20 +153,32 @@ val mediaDataEntity =
                     }.name
             GetDescriptionTextExtensionFingerprint.changeFirstString(getCommentDataFromMediaMethodName)
 
-            // Extraction of trackInfo: the media helper method that builds a container from a MusicInfo.
-            val trackContainerBuilderName =
-                classDefBy(MEDIAEXT_CLASS_NAME)
-                    .methods
-                    .firstOrNull { method ->
-                        method.implementation?.instructions?.any {
-                            it.opcode == Opcode.INVOKE_DIRECT &&
-                                it.getReference<MethodReference>()?.let { ref ->
-                                    ref.name == "<init>" &&
-                                        ref.parameterTypes.singleOrNull()?.toString() == MUSIC_INFO_CLASS
-                                } == true
-                        } == true
-                    }?.name ?: throw PatchException("Could not identify the track data builder")
-            GetTrackDataIntfExtensionFingerprint.changeFirstString(trackContainerBuilderName)
+            // Extraction of trackInfo. Up to 451 a media helper built a container from the MusicInfo
+            // of either of the media's two music models; 452 dropped it. The extension follows the
+            // models itself: each is a media getter whose type has a MusicInfo getter. All names are
+            // taken by type, since the extension's old hard-coded ones were already stale on 451.
+            val musicModels =
+                classDefBy(MEDIA_CLASS_NAME).methods.filter { it.parameterTypes.isEmpty() }.mapNotNull { modelGetter ->
+                    classDefByOrNull(modelGetter.returnType)?.methods
+                        ?.singleOrNull { it.parameterTypes.isEmpty() && it.returnType == MUSIC_INFO_CLASS }
+                        ?.let { musicInfoGetter -> modelGetter.name to musicInfoGetter.name }
+                }
+            if (musicModels.size != 2) throw PatchException("Expected two media music models, found ${musicModels.size}")
+            musicModels.forEachIndexed { model, (modelGetter, musicInfoGetter) ->
+                GetTrackDataIntfExtensionFingerprint.changeStringAt(2 * model, modelGetter)
+                GetTrackDataIntfExtensionFingerprint.changeStringAt(2 * model + 1, musicInfoGetter)
+            }
+
+            val trackDataGetter = classDefBy(MUSIC_INFO_CLASS).methods
+                .singleOrNull { it.parameterTypes.isEmpty() && it.returnType == TRACK_DATA_CLASS }
+                ?: throw PatchException("Could not identify the music info's track data getter")
+            GetTrackDataExtensionFingerprint.changeFirstString(trackDataGetter.name)
+
+            val trackMapGetter = classDefBy(TRACK_DATA_CLASS).interfaces.mapNotNull { classDefByOrNull(it) }
+                .flatMap { it.methods }
+                .singleOrNull { it.parameterTypes.isEmpty() && it.returnType == "Ljava/util/Map;" }
+                ?: throw PatchException("Could not identify the track data's map getter")
+            GetTrackMappingsExtensionFingerprint.changeFirstString(trackMapGetter.name)
 
             // Message audio (voice notes): media -> audio interface -> url. The interface is taken
             // from the "audio_src" getter, since its name changes between builds.
@@ -213,3 +233,12 @@ val mediaDataEntity =
             // End.
         }
     }
+
+/** Whether [helper] reads a media's tree field -1749461646 and then that tree's media type. */
+private fun BytecodePatchContext.readsMediaType(helper: MethodReference): Boolean {
+    val implementation = classDefByOrNull(helper.definingClass)?.methods?.firstOrNull { method ->
+        method.name == helper.name && method.parameterTypes == helper.parameterTypes
+    }?.implementation ?: return false
+    val literals = implementation.instructions.mapNotNull { (it as? WideLiteralInstruction)?.wideLiteral }.toSet()
+    return literals.containsAll(listOf(-1749461646L, 1939875509L))
+}

@@ -15,15 +15,15 @@ Click here to add these patches to Morphe: https://morphe.software/add-source?gi
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.9.0](https://github.com/ahmedyarub/morphe-patches/releases/tag/v1.9.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;57 patches total
+> **[v1.16.1](https://github.com/ahmedyarub/morphe-patches/releases/tag/v1.16.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;60 patches total
 <details open>
-<summary>📦 X&nbsp;&nbsp;•&nbsp;&nbsp;40 patches</summary>
+<summary>📦 X&nbsp;&nbsp;•&nbsp;&nbsp;41 patches</summary>
 <br>
 
 **🎯 Supported versions:**
 
-| 12.30.0-prod.01 |
-| :---: |
+| 12.32.0-prod.01 | 12.33.0-prod.01 | 12.33.1-prod.01 | 12.34.0-prod.01 | 12.35.0-prod.01 |
+| :---: | :---: | :---: | :---: | :---: |
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
@@ -45,6 +45,7 @@ Click here to add these patches to Morphe: https://morphe.software/add-source?gi
 | [Enable Undo Posts](#enable-undo-posts) | Holds each post for a few seconds before sending it, so it can be undone. | • Undo period |
 | [Enable debug menu for posts](#enable-debug-menu-for-posts) | Adds "Post data" to the post menu: everything the app knows about the post, as text. |  |
 | [Enable force HD videos](#enable-force-hd-videos) | Always plays videos at the highest quality the device supports, whatever the connection. |  |
+| [Feed filters](#feed-filters) | Adds feed filters to timelines: media only (images, videos, GIFs), hide followed profiles, and include/exclude keyword filtering. Toggle each filter from the Morphe settings. | • Initial include keywords |
 | [Filter posts by keyword](#filter-posts-by-keyword) | Hides posts whose text contains any of your keywords, ignoring case. Edit the keywords from "Filtered keywords" in any post's menu, or in the Morphe settings. | • Initial keywords |
 | [Force enable translate](#force-enable-translate) | Offers to translate every post, not only those the server marks translatable. |  |
 | [Handle custom twitter links](#handle-custom-twitter-links) | Opens links to other X frontends, such as fxtwitter and vxtwitter, in the app. They have to be enabled under "Open by default" in the app's system settings. | • Hosts |
@@ -71,22 +72,23 @@ Click here to add these patches to Morphe: https://morphe.software/add-source?gi
 </details>
 
 <details open>
-<summary>📦 Instagram&nbsp;&nbsp;•&nbsp;&nbsp;15 patches</summary>
+<summary>📦 Instagram&nbsp;&nbsp;•&nbsp;&nbsp;17 patches</summary>
 <br>
 
 **🎯 Supported versions:**
 
-| 449.0.0.52.84 |
+| 451.0.0.53.80 |
 | :---: |
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
+| [Auto not interested](#auto-not-interested) | Skips the reason popup and auto-submits when tapping Not Interested. |  |
 | [Bypass signature check](#bypass-signature-check) |  |  |
 | [Disable analytics](#disable-analytics) | Blocks analytics requests sent to Instagram and Facebook servers. |  |
 | [Disable screenshot detection](#disable-screenshot-detection) | Disables screenshot detection in direct messages and stories. |  |
 | [Download media](#download-media) | Adds ability to download posts, reels, stories and highlights |  |
 | [Download voice message](#download-voice-message) | Enables ability to download voice messages |  |
-| [Filter stories](#filter-stories) | Hides categories of stories from the story tray. | • Hide ad stories<br>• Hide suggested stories<br>• Hide highlights |
+| [Filter stories](#filter-stories) | Hides categories of stories from the story tray. | • Only organic stories<br>• Hide ad stories<br>• Hide suggested stories<br>• Hide highlights<br>• Hide "Your Turn" stories |
 | [Hide Instants](#hide-instants) | Hides Instants from DMs page. |  |
 | [Hide Threads profile button](#hide-threads-profile-button) | Hides the Threads button from the profile page action bar (top right of the profile page). |  |
 | [Hide ads](#hide-ads) | Hides ads in the feed. |  |
@@ -94,6 +96,7 @@ Click here to add these patches to Morphe: https://morphe.software/add-source?gi
 | [Improve image viewing](#improve-image-viewing) | Requests the maximum resolution images from the server. |  |
 | [Make ephemeral media permanent](#make-ephemeral-media-permanent) | Changes unexpired view once, view twice media to permanent view. |  |
 | [Open links externally](#open-links-externally) | Opens links in the system browser instead of the in-app browser. |  |
+| [Reorder menu options](#reorder-menu-options) | Moves Interested and Not Interested to the top of the post menu. |  |
 | [Sanitize share links](#sanitize-share-links) | Removes tracking parameters from links shared out of the app. |  |
 | [Save deleted messages](#save-deleted-messages) | Keeps a local copy of incoming DMs so ones the sender deletes stay readable. Messages are stored unencrypted in the app's private storage. | • Days to keep messages |
 

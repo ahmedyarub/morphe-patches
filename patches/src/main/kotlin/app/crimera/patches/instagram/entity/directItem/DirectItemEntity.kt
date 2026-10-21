@@ -6,6 +6,8 @@
 
 package app.crimera.patches.instagram.entity.directItem
 
+import app.ahmedyarub.patches.shared.indicesOfString
+import app.ahmedyarub.patches.shared.stringPoolsPatch
 import app.crimera.utils.changeFirstString
 import app.crimera.utils.changeString
 import app.crimera.utils.classNameToExtension
@@ -45,26 +47,25 @@ val directItemEntity =
     bytecodePatch(
         description = "Decodes obfuscated DirectItem (DM) field names at patch time.",
     ) {
-        dependsOn(instagramExtensionPatch)
+        dependsOn(instagramExtensionPatch, stringPoolsPatch)
         execute {
             val itemClass = classDefBy(DirectItemDispatchFingerprint.originalClassDef.type)
 
-            // The field the parser stores a key's value in: the first iput after the key.
+            // The field the parser stores a key's value in: the first iput after the key. From 452
+            // some keys, such as is_sent_by_viewer, are loaded from a string pool.
             fun fieldAfter(key: String): FieldReference =
-                itemClass.methodInstructions.firstNotNullOfOrNull { instructions ->
-                    val keyIndex = instructions.indexOfFirst { it.isConstString(key) }
-                    if (keyIndex < 0) return@firstNotNullOfOrNull null
-                    instructions.drop(keyIndex + 1)
+                itemClass.methods.firstNotNullOfOrNull { method ->
+                    val keyIndex = method.indicesOfString(key).firstOrNull() ?: return@firstNotNullOfOrNull null
+                    method.implementation!!.instructions.drop(keyIndex + 1)
                         .firstOrNull { it.opcode.name.startsWith("iput", ignoreCase = true) }
                         ?.let { (it as ReferenceInstruction).reference as FieldReference }
                 } ?: throw PatchException("No field is stored after '$key' in ${itemClass.type}")
 
             // As above, restricted to object fields.
             fun objectFieldAfter(key: String): FieldReference =
-                itemClass.methodInstructions.firstNotNullOfOrNull { instructions ->
-                    val keyIndex = instructions.indexOfFirst { it.isConstString(key) }
-                    if (keyIndex < 0) return@firstNotNullOfOrNull null
-                    instructions.drop(keyIndex + 1)
+                itemClass.methods.firstNotNullOfOrNull { method ->
+                    val keyIndex = method.indicesOfString(key).firstOrNull() ?: return@firstNotNullOfOrNull null
+                    method.implementation!!.instructions.drop(keyIndex + 1)
                         .firstOrNull { it.opcode == Opcode.IPUT_OBJECT }
                         ?.let { (it as ReferenceInstruction).reference as FieldReference }
                 } ?: throw PatchException("No object field is stored after '$key' in ${itemClass.type}")
