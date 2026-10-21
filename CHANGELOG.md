@@ -1,3 +1,9 @@
+## [1.18.0-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.17.0...v1.18.0-dev.1) (2026-10-21)
+
+### ✨ New Features
+
+* **Instagram:** Filter suggested stories where the reel store takes them in ([99f814d](https://github.com/ahmedyarub/morphe-patches/commit/99f814d3b66d42da15f2fe80e95046e68ad4ce57))
+
 ## [1.17.0](https://github.com/ahmedyarub/morphe-patches/compare/v1.16.1...v1.17.0) (2026-10-21)
 
 ### 🐛 Bug Fixes
