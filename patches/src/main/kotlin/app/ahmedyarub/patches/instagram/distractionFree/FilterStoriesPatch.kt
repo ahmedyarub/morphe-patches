@@ -31,7 +31,7 @@ val filterStoriesPatch = bytecodePatch(
 ) {
     compatibleWith(COMPATIBILITY_INSTAGRAM)
 
-    dependsOn(filterStoriesTrayHook, blockUrlHook)
+    dependsOn(filterStoriesTrayHook, filterStoriesStoreHook, blockUrlHook)
 
     val onlyOrganic by booleanOption(
         key = "onlyOrganicStories",
@@ -78,6 +78,8 @@ val filterStoriesPatch = bytecodePatch(
             // Ads and suggestion cards inserted between stories while watching are fetched
             // separately from the tray.
             blockUrl("/feed/injected_reels_media/")
+            // Midcards the app itself fetches and injects into the tray.
+            ReelStoreFetchMidcardsFingerprint.method.returnEarly()
         }
 
         if (hideAds == true) filterStories("ads_reel")
