@@ -1,3 +1,9 @@
+## [1.18.1-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.18.0...v1.18.1-dev.1) (2026-10-21)
+
+### 🐛 Bug Fixes
+
+* **Instagram:** Port four piko fixes to 452 ([6a4dbf0](https://github.com/ahmedyarub/morphe-patches/commit/6a4dbf0bb79d436102381df7f47e68c4b9963acc))
+
 ## [1.18.0](https://github.com/ahmedyarub/morphe-patches/compare/v1.17.0...v1.18.0) (2026-10-21)
 
 ### 🐛 Bug Fixes

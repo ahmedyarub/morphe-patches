@@ -15,7 +15,7 @@ Click here to add these patches to Morphe: https://morphe.software/add-source?gi
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.18.0](https://github.com/ahmedyarub/morphe-patches/releases/tag/v1.18.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;60 patches total
+> **[v1.18.1-dev.1](https://github.com/ahmedyarub/morphe-patches/releases/tag/v1.18.1-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;60 patches total
 <details open>
 <summary>📦 X&nbsp;&nbsp;•&nbsp;&nbsp;41 patches</summary>
 <br>
@@ -91,10 +91,10 @@ Click here to add these patches to Morphe: https://morphe.software/add-source?gi
 | [Filter stories](#filter-stories) | Hides categories of stories from the story tray. | • Only organic stories<br>• Hide ad stories<br>• Hide suggested stories<br>• Hide highlights<br>• Hide "Your Turn" stories |
 | [Hide Instants](#hide-instants) | Hides Instants from DMs page. |  |
 | [Hide Threads profile button](#hide-threads-profile-button) | Hides the Threads button from the profile page action bar (top right of the profile page). |  |
-| [Hide ads](#hide-ads) | Hides ads in the feed. |  |
+| [Hide ads](#hide-ads) | Hides ads in the feed and in the Following feed. |  |
 | [Hide suggested content](#hide-suggested-content) | Hides suggested reels and suggested accounts. Suggested stories are hidden by Filter stories. | • Hide suggested reels<br>• Hide suggested accounts |
 | [Improve image viewing](#improve-image-viewing) | Requests the maximum resolution images from the server. |  |
-| [Make ephemeral media permanent](#make-ephemeral-media-permanent) | Changes unexpired view once, view twice media to permanent view. |  |
+| [Make ephemeral media permanent](#make-ephemeral-media-permanent) | Changes unexpired view once, view twice media to permanent view. Opening such media no longer sends Instagram a seen receipt, so it is still there after the chat refreshes. |  |
 | [Open links externally](#open-links-externally) | Opens links in the system browser instead of the in-app browser. |  |
 | [Reorder menu options](#reorder-menu-options) | Moves Interested and Not Interested to the top of the post menu. |  |
 | [Sanitize share links](#sanitize-share-links) | Removes tracking parameters from links shared out of the app. |  |

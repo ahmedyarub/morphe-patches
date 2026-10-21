@@ -16,10 +16,12 @@ import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.util.getReference
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.ClassDef
 import com.android.tools.smali.dexlib2.iface.instruction.Instruction
+import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
@@ -51,24 +53,30 @@ val directItemEntity =
         execute {
             val itemClass = classDefBy(DirectItemDispatchFingerprint.originalClassDef.type)
 
-            // The field the parser stores a key's value in: the first iput after the key. From 452
-            // some keys, such as is_sent_by_viewer, are loaded from a string pool.
-            fun fieldAfter(key: String): FieldReference =
+            // The field the parser stores a key's value in: the first store on the path taken when
+            // the key matches. From 452 some keys, such as is_sent_by_viewer, are loaded from a
+            // string pool.
+            fun storedAfter(
+                key: String,
+                isStore: (Instruction) -> Boolean,
+            ): FieldReference? =
                 itemClass.methods.firstNotNullOfOrNull { method ->
-                    val keyIndex = method.indicesOfString(key).firstOrNull() ?: return@firstNotNullOfOrNull null
-                    method.implementation!!.instructions.drop(keyIndex + 1)
-                        .firstOrNull { it.opcode.name.startsWith("iput", ignoreCase = true) }
-                        ?.let { (it as ReferenceInstruction).reference as FieldReference }
-                } ?: throw PatchException("No field is stored after '$key' in ${itemClass.type}")
+                    val instructions = method.implementation?.instructions?.toList() ?: return@firstNotNullOfOrNull null
+                    method.indicesOfString(key).firstNotNullOfOrNull { keyIndex ->
+                        val valueIndex = matchedKeyIndex(instructions, keyIndex) ?: return@firstNotNullOfOrNull null
+                        instructions.drop(valueIndex).firstOrNull(isStore)
+                            ?.let { (it as ReferenceInstruction).reference as FieldReference }
+                    }
+                }
+
+            fun fieldAfter(key: String): FieldReference =
+                storedAfter(key) { it.opcode.name.startsWith("iput", ignoreCase = true) }
+                    ?: throw PatchException("No field is stored after '$key' in ${itemClass.type}")
 
             // As above, restricted to object fields.
             fun objectFieldAfter(key: String): FieldReference =
-                itemClass.methods.firstNotNullOfOrNull { method ->
-                    val keyIndex = method.indicesOfString(key).firstOrNull() ?: return@firstNotNullOfOrNull null
-                    method.implementation!!.instructions.drop(keyIndex + 1)
-                        .firstOrNull { it.opcode == Opcode.IPUT_OBJECT }
-                        ?.let { (it as ReferenceInstruction).reference as FieldReference }
-                } ?: throw PatchException("No object field is stored after '$key' in ${itemClass.type}")
+                storedAfter(key) { it.opcode == Opcode.IPUT_OBJECT }
+                    ?: throw PatchException("No object field is stored after '$key' in ${itemClass.type}")
 
             val itemId = fieldAfter("item_id")
             GetItemIdExtension.changeFirstString(itemId.name)
@@ -76,9 +84,14 @@ val directItemEntity =
 
             GetUserIdExtension.changeFirstString(fieldAfter("user_id").name)
 
-            val textField = fieldAfter("text").name
-            GetTextExtension.changeString("baseTextField", textField)
-            SetTextExtension.changeString("baseTextField", textField)
+            // "text" and "reaction" share one store. Its first store in line belongs to the next
+            // key, original_text, which is null on almost every message.
+            val textField = fieldAfter("text")
+            if (textField.type != "Ljava/lang/String;" || textField.definingClass != itemId.definingClass) {
+                throw PatchException("DirectItem text is not a String on ${itemId.definingClass}")
+            }
+            GetTextExtension.changeString("baseTextField", textField.name)
+            SetTextExtension.changeString("baseTextField", textField.name)
 
             GetTimestampRawExtension.changeFirstString(fieldAfter("timestamp").name)
 
@@ -227,12 +240,7 @@ private fun resolveXmaLink(itemClass: ClassDef) {
             }
         if (xmaKeyIndex < 0) continue
         val ifNez = instructions.drop(xmaKeyIndex + 1).firstOrNull { it.opcode == Opcode.IF_NEZ } ?: continue
-
-        var address = 0
-        val addresses = instructions.map { instruction -> address.also { address += instruction.codeUnits } }
-        val ifNezIndex = instructions.indexOf(ifNez)
-        val targetIndex = addresses.indexOf(addresses[ifNezIndex] + (ifNez as OffsetInstruction).codeOffset)
-        if (targetIndex < 0) continue
+        val targetIndex = branchTargetIndex(instructions, instructions.indexOf(ifNez)) ?: continue
 
         val block = instructions.drop(targetIndex)
         val listField =
@@ -260,4 +268,40 @@ private fun resolveXmaLink(itemClass: ClassDef) {
     }
 
     throw PatchException("Could not identify the xma reshare fields on ${itemClass.type}")
+}
+
+/**
+ * Where the value of the key loaded at [keyIndex] is read, for a parser that tests each key with
+ * equals -> move-result -> branch. The value follows an if-eqz in line, and is the target of an
+ * if-nez, which several keys can share. Null when the key is not tested that way.
+ */
+private fun matchedKeyIndex(
+    instructions: List<Instruction>,
+    keyIndex: Int,
+): Int? {
+    val equalsCall = instructions.getOrNull(keyIndex + 1) ?: return null
+    val result = instructions.getOrNull(keyIndex + 2) ?: return null
+    val branch = instructions.getOrNull(keyIndex + 3) ?: return null
+    if (equalsCall.getReference<MethodReference>()?.toString() != "Ljava/lang/String;->equals(Ljava/lang/Object;)Z" ||
+        result.opcode != Opcode.MOVE_RESULT ||
+        (result as OneRegisterInstruction).registerA != (branch as? OneRegisterInstruction)?.registerA
+    ) {
+        return null
+    }
+    return when (branch.opcode) {
+        Opcode.IF_EQZ -> keyIndex + 4
+        Opcode.IF_NEZ -> branchTargetIndex(instructions, keyIndex + 3)
+        else -> null
+    }
+}
+
+/** The index of the instruction the branch at [branchIndex] jumps to. */
+private fun branchTargetIndex(
+    instructions: List<Instruction>,
+    branchIndex: Int,
+): Int? {
+    var address = 0
+    val addresses = instructions.map { instruction -> address.also { address += instruction.codeUnits } }
+    val target = addresses[branchIndex] + (instructions[branchIndex] as OffsetInstruction).codeOffset
+    return addresses.indexOf(target).takeIf { it >= 0 }
 }

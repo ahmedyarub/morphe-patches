@@ -32,10 +32,12 @@ import app.morphe.util.getReference
 import app.morphe.util.registersUsed
 import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.builder.BuilderOffsetInstruction
 import com.android.tools.smali.dexlib2.iface.Method
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 import com.android.tools.smali.dexlib2.iface.reference.StringReference
+import com.android.tools.smali.dexlib2.iface.reference.TypeReference
 
 private const val HOOK_CLASS = "$PATCHES_DESCRIPTOR/dm/SavedMessagesHook;"
 private const val DIRECT_THREAD_KEY = "Lcom/instagram/model/direct/DirectThreadKey;"
@@ -248,12 +250,30 @@ private fun hookThreadUsers() {
         val usersKeyIndex =
             instructions.indexOfFirst { it.getReference<StringReference>()?.string == "users" }
         if (usersKeyIndex < 0) throw PatchException("The thread deserializer has no users key")
+
+        // The list is stored out of line, in the block the array loop exits to, so the next list
+        // store in line belongs to another key (nicknames on 452). That block is the target of
+        // the start-of-array check just before the list is created.
+        val usersArrayIndex =
+            (usersKeyIndex + 1 until instructions.size).firstOrNull { index ->
+                instructions[index].opcode == Opcode.NEW_INSTANCE &&
+                    instructions[index].getReference<TypeReference>()?.type == "Ljava/util/ArrayList;"
+            } ?: throw PatchException("The thread deserializer never creates the users list")
+        val arrayGuard = getInstruction(usersArrayIndex - 1)
+        if (arrayGuard.opcode != Opcode.IF_NE) throw PatchException("The users list has an unexpected guard")
         val listPut =
-            instructions.drop(usersKeyIndex + 1).firstOrNull { instruction ->
-                instruction.opcode == Opcode.IPUT_OBJECT &&
-                    instruction.getReference<FieldReference>()?.type == "Ljava/util/List;"
-            } ?: throw PatchException("The thread deserializer never stores the users list")
+            instructions.drop((arrayGuard as BuilderOffsetInstruction).target.location.index)
+                .takeWhile { it.opcode != Opcode.RETURN_VOID }
+                .singleOrNull { instruction ->
+                    instruction.opcode == Opcode.IPUT_OBJECT &&
+                        instruction.getReference<FieldReference>()?.type == "Ljava/util/List;"
+                } ?: throw PatchException("The thread deserializer does not store the users list once")
         val listRegister = listPut.registersUsed[0]
+        if (listRegister != getInstruction(usersArrayIndex).registersUsed.single() ||
+            listPut.getReference<FieldReference>()?.definingClass != parameterTypes.firstOrNull()?.toString()
+        ) {
+            throw PatchException("The users list store has an unexpected source or owner")
+        }
 
         addInstructions(
             listPut.location.index + 1,
