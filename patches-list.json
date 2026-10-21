@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.18.0",
+  "version": "1.18.1-dev.1",
   "patches": [
     {
       "name": "Add ability to copy media link",
@@ -2347,7 +2347,7 @@
     },
     {
       "name": "Hide ads",
-      "description": "Hides ads in the feed.",
+      "description": "Hides ads in the feed and in the Following feed.",
       "default": true,
       "category": null,
       "dependencies": [],
@@ -2767,7 +2767,7 @@
     },
     {
       "name": "Make ephemeral media permanent",
-      "description": "Changes unexpired view once, view twice media to permanent view.",
+      "description": "Changes unexpired view once, view twice media to permanent view. Opening such media no longer sends Instagram a seen receipt, so it is still there after the chat refreshes.",
       "default": true,
       "category": null,
       "dependencies": [],
