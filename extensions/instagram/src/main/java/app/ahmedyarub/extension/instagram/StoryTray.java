@@ -3,7 +3,9 @@ package app.ahmedyarub.extension.instagram;
 import android.util.Log;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -36,6 +38,95 @@ public final class StoryTray {
 
     /** Replaced at patch time with true when "Only organic stories" is on. */
     private static boolean onlyOrganicStories() {
+        return false;
+    }
+
+    private static final String TRAY_ITEM_INTERFACE = "com.instagram.model.reels.ReelResponseItemIntf";
+
+    /** The tray item interface's reel type getter and injected-unit payload getters, found once. */
+    private static volatile Method trayItemTypeGetter;
+    private static volatile List<Method> trayItemPayloadGetters;
+
+    /**
+     * Injection point: the tray items the reel store is about to add, whichever response or model
+     * they came from. Returns the items without injected units and, with "Only organic stories",
+     * without reel types people do not post. The list is returned as is when nothing is dropped.
+     */
+    public static List<Object> filterTrayItems(List<Object> items) {
+        if (items == null || items.isEmpty()) return items;
+        try {
+            List<Object> kept = new ArrayList<>(items.size());
+            for (Object item : items) {
+                String reason = item == null ? null : trayItemDropReason(item);
+                if (reason == null) {
+                    kept.add(item);
+                } else {
+                    Log.d(TAG, "Dropped store tray item: " + reason);
+                }
+            }
+            return kept.size() == items.size() ? items : kept;
+        } catch (Throwable ex) {
+            // Fails open, as addStoryIfNotBlocked does: a failure here is not specific to one item.
+            if (!failureLogged) {
+                failureLogged = true;
+                Logger.printException(() -> "Could not filter the reel store's tray items", ex);
+            }
+            return items;
+        }
+    }
+
+    /** Why a tray item is dropped, or null to keep it. Items of other types are kept. */
+    private static String trayItemDropReason(Object item) throws Exception {
+        Class<?> intf = trayItemInterface(item.getClass());
+        if (intf == null) return null;
+        resolveTrayItemGetters(intf);
+
+        for (Method getter : trayItemPayloadGetters) {
+            if (getter.invoke(item) != null) return "carrying " + getter.getReturnType().getSimpleName();
+        }
+        if (onlyOrganicStories() && trayItemTypeGetter != null) {
+            Object type = trayItemTypeGetter.invoke(item);
+            // An item without a type is kept: nothing marks it as injected.
+            if (type != null && !ORGANIC_REEL_TYPES.contains(type.toString())) return "type " + type;
+        }
+        return null;
+    }
+
+    private static Class<?> trayItemInterface(Class<?> type) {
+        for (Class<?> c = type; c != null; c = c.getSuperclass()) {
+            for (Class<?> intf : c.getInterfaces()) {
+                if (intf.getName().equals(TRAY_ITEM_INTERFACE)) return intf;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Finds the getters by return type, since their names are obfuscated: the type getter returns
+     * the reel type enum (which has a suggested_user_reel constant), the payload getters return
+     * netego, suggestion or ad schema types.
+     */
+    private static void resolveTrayItemGetters(Class<?> intf) {
+        if (trayItemPayloadGetters != null) return;
+        List<Method> payloads = new ArrayList<>();
+        Method typeGetter = null;
+        for (Method method : intf.getMethods()) {
+            if (method.getParameterTypes().length != 0) continue;
+            Class<?> returnType = method.getReturnType();
+            if (isInjectedUnitType(returnType)) {
+                payloads.add(method);
+            } else if (returnType.isEnum() && hasConstant(returnType, "suggested_user_reel")) {
+                typeGetter = method;
+            }
+        }
+        trayItemTypeGetter = typeGetter;
+        trayItemPayloadGetters = payloads;
+    }
+
+    private static boolean hasConstant(Class<?> enumType, String value) {
+        for (Object constant : enumType.getEnumConstants()) {
+            if (value.equals(constant.toString())) return true;
+        }
         return false;
     }
 
