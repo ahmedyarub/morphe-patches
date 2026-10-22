@@ -1,3 +1,13 @@
+## [1.19.0](https://github.com/ahmedyarub/morphe-patches/compare/v1.18.1...v1.19.0) (2026-10-22)
+
+### 🐛 Bug Fixes
+
+* **Instagram:** Resolve the user id getter for Save deleted messages ([9a134ed](https://github.com/ahmedyarub/morphe-patches/commit/9a134ed6b8e6b94d33834b7efc89c5592f847b5e))
+
+### ✨ New Features
+
+* **Instagram:** Support 452.1.0.53.64 ([61b457d](https://github.com/ahmedyarub/morphe-patches/commit/61b457df86f44cea8f21d55c4e621853e2509697))
+
 ## [1.19.0-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.18.1...v1.19.0-dev.1) (2026-10-22)
 
 ### 🐛 Bug Fixes
