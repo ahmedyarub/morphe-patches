@@ -1,3 +1,9 @@
+## [1.20.0](https://github.com/ahmedyarub/morphe-patches/compare/v1.19.0...v1.20.0) (2026-10-22)
+
+### ✨ New Features
+
+* **Instagram:** Block the midcards shown between stories ([ebe6cb0](https://github.com/ahmedyarub/morphe-patches/commit/ebe6cb0004aa213afd603492b79e7c42ab554429))
+
 ## [1.20.0-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.19.0...v1.20.0-dev.1) (2026-10-22)
 
 ### ✨ New Features
