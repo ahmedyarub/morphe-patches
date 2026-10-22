@@ -16,6 +16,11 @@ internal object GetUsernameExtensionFingerprint : Fingerprint(
     definingClass = EXTENSION_CLASS_DESCRIPTOR,
 )
 
+internal object GetUserIdExtensionFingerprint : Fingerprint(
+    name = "getUserId",
+    definingClass = EXTENSION_CLASS_DESCRIPTOR,
+)
+
 internal object GetFullNameExtensionFingerprint : Fingerprint(
     name = "getFullName",
     definingClass = EXTENSION_CLASS_DESCRIPTOR,
