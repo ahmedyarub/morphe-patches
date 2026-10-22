@@ -12,6 +12,10 @@ import app.crimera.utils.changeFirstString
 import app.crimera.utils.liveTreeGetter
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
+import app.morphe.util.getReference
+import com.android.tools.smali.dexlib2.Opcode
+import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import com.android.tools.smali.dexlib2.iface.reference.StringReference
 import app.morphe.library.instagram.patches.instagramExtensionPatch
 
 private const val STRING = "Ljava/lang/String;"
@@ -38,6 +42,22 @@ val userDataEntity =
                 ?: throw PatchException("Could not identify the $jsonKey getter on the user model")
 
             GetUsernameExtensionFingerprint.changeFirstString(getterName("username") { it == STRING })
+            // The id getter. The extension's hard-coded getId is gone from the user model (451 and
+            // 452 alike), and the id carries no json key of its own: the model's bulk tree methods
+            // read it right after the "strong_id__" key, which is piko's anchor too.
+            val userIdGetters = classDefBy(USER_MODEL_CLASS_NAME).methods.mapNotNull { method ->
+                val instructions = method.implementation?.instructions?.toList() ?: return@mapNotNull null
+                val keyIndex = instructions.indexOfFirst { it.getReference<StringReference>()?.string == "strong_id__" }
+                if (keyIndex < 0) return@mapNotNull null
+                instructions.getOrNull(keyIndex + 1)
+                    ?.takeIf { it.opcode == Opcode.INVOKE_VIRTUAL }
+                    ?.getReference<MethodReference>()
+                    ?.takeIf { it.definingClass == USER_MODEL_CLASS_NAME && it.parameterTypes.isEmpty() && it.returnType == STRING }
+                    ?.name
+            }.distinct()
+            GetUserIdExtensionFingerprint.changeFirstString(
+                userIdGetters.singleOrNull() ?: throw PatchException("Could not identify the user id getter: $userIdGetters"),
+            )
             GetFullNameExtensionFingerprint.changeFirstString(getterName("full_name") { it == STRING })
             GetBioExtensionFingerprint.changeFirstString(getterName("biography") { it == STRING })
             IsVerifiedExtensionFingerprint.changeFirstString(getterName("is_verified") { it == BOXED_BOOLEAN })
