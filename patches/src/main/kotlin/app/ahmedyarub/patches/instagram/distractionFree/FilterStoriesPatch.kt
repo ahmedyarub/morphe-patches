@@ -17,6 +17,11 @@ import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.patch.booleanOption
 import app.morphe.patcher.patch.bytecodePatch
 import app.morphe.util.returnEarly
+import app.ahmedyarub.patches.shared.loadedStrings
+import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.patch.PatchException
+
+private const val MIDCARDS_PACKAGE = "Lcom/instagram/reels/midcards/"
 
 private object OnlyOrganicStoriesFingerprint : Fingerprint(
     definingClass = "Lapp/ahmedyarub/extension/instagram/StoryTray;",
@@ -80,6 +85,29 @@ val filterStoriesPatch = bytecodePatch(
             blockUrl("/feed/injected_reels_media/")
             // Midcards the app itself fetches and injects into the tray.
             ReelStoreFetchMidcardsFingerprint.method.returnEarly()
+
+            // The cards shown between stories (music for you, Add Yours prompts, trending
+            // templates, suggested users, Meta AI and other platform cards) are midcards, each
+            // fetched over GraphQL by an API class under com.instagram.reels.midcards rather than
+            // with the tray. A fetch returns null when its query does not succeed, which its
+            // callers handle, so each one returns null at once and its query is never sent.
+            var midcardFetches = 0
+            classDefForEach { classDef ->
+                if (!classDef.type.startsWith(MIDCARDS_PACKAGE) || !classDef.type.endsWith("Api;")) return@classDefForEach
+                val fetches = classDef.methods.filter { method ->
+                    method.returnType == "Ljava/lang/Object;" &&
+                        method.loadedStrings.any { it.contains("Midcard", ignoreCase = true) }
+                }
+                if (fetches.isEmpty()) return@classDefForEach
+                val mutable = mutableClassDefBy(classDef)
+                fetches.forEach { fetch ->
+                    mutable.methods.first {
+                        it.name == fetch.name && it.parameterTypes == fetch.parameterTypes && it.returnType == fetch.returnType
+                    }.addInstructions(0, "const/4 v0, 0x0\nreturn-object v0")
+                    midcardFetches++
+                }
+            }
+            if (midcardFetches == 0) throw PatchException("No story midcard fetch found under $MIDCARDS_PACKAGE")
         }
 
         if (hideAds == true) filterStories("ads_reel")
