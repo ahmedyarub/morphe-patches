@@ -4,6 +4,8 @@ import app.ahmedyarub.patches.shared.Constants.COMPATIBILITY_X
 import app.ahmedyarub.patches.x.shared.EXTENSION_PACKAGE
 import app.ahmedyarub.patches.x.shared.xExtensionPatch
 import app.morphe.patcher.Fingerprint
+import app.morphe.patcher.StringComparisonType
+import app.morphe.patcher.string
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
@@ -34,10 +36,13 @@ private object DidSelectOptionToStringFingerprint : Fingerprint(
     strings = listOf("DidSelectOption(option="),
 )
 
-/** The post menu presenter's event handler, whose constructor names the presenter. */
+/**
+ * The post menu presenter's event handler, whose constructor names the presenter inside a longer
+ * descriptor string, so the name is matched as a substring (the default before patcher 2.0).
+ */
 private object PostOptionsEventHandlerFingerprint : Fingerprint(
     name = "<init>",
-    strings = listOf("DefaultPostOptionsPresenter"),
+    strings = listOf(string("DefaultPostOptionsPresenter", StringComparisonType.CONTAINS)),
 )
 
 private object MainActivityOnCreateFingerprint : Fingerprint(
