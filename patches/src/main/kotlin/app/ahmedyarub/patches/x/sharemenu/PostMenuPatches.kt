@@ -85,17 +85,22 @@ internal val postMenuPatch = bytecodePatch(
         PostMenuSetting("actionClass").method.returnEarly(actionType.toClassName())
         PostMenuSetting("groupClass").method.returnEarly(OptionGroupToStringFingerprint.classDef.type.toClassName())
 
-        // The state: (shown, author, groups, labels, ...).
-        mutableClassDefBy(PostOptionsStateToStringFingerprint.classDef).methods.single { method ->
+        // The state: (shown, author, groups, labels, ...). The labels are a Map up to 12.36 and a
+        // LinkedHashMap from 12.37; labels() returns the map it is given or a LinkedHashMap, so the
+        // result is cast back to the parameter's own type.
+        val state = mutableClassDefBy(PostOptionsStateToStringFingerprint.classDef).methods.single { method ->
             method.name == "<init>" && method.parameterTypes.firstOrNull() == "Z" &&
-                method.parameterTypes.getOrNull(2) == "Ljava/util/List;" && method.parameterTypes.getOrNull(3) == "Ljava/util/Map;"
-        }.addInstructions(
+                method.parameterTypes.getOrNull(2) == "Ljava/util/List;" &&
+                method.parameterTypes.getOrNull(3)?.toString() in setOf("Ljava/util/Map;", "Ljava/util/LinkedHashMap;")
+        }
+        state.addInstructions(
             0,
             """
             invoke-static { p1, p3 }, $POST_MENU_CLASS->options(ZLjava/util/List;)Ljava/util/List;
             move-result-object p3
             invoke-static { p1, p4 }, $POST_MENU_CLASS->labels(ZLjava/util/Map;)Ljava/util/Map;
             move-result-object p4
+            check-cast p4, ${state.parameterTypes[3]}
             """,
         )
 
