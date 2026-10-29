@@ -1,3 +1,9 @@
+## [1.21.3-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.21.2...v1.21.3-dev.1) (2026-10-29)
+
+### 🐛 Bug Fixes
+
+* **Instagram:** Opening a chat crashes on 453 ([c74ff51](https://github.com/ahmedyarub/morphe-patches/commit/c74ff510661cd31302a9b7acb586eb0a3b094665))
+
 ## [1.21.2](https://github.com/ahmedyarub/morphe-patches/compare/v1.21.1...v1.21.2) (2026-10-29)
 
 ### 🐛 Bug Fixes
