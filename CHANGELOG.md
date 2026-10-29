@@ -1,3 +1,9 @@
+## [1.21.2](https://github.com/ahmedyarub/morphe-patches/compare/v1.21.1...v1.21.2) (2026-10-29)
+
+### 🐛 Bug Fixes
+
+* Support Instagram 453.0.0.57.79 and X 12.38.1 ([a0da7bb](https://github.com/ahmedyarub/morphe-patches/commit/a0da7bb4b2078177c6a0c58cc747a3ed024fbd75))
+
 ## [1.21.2-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.21.1...v1.21.2-dev.1) (2026-10-29)
 
 ### 🐛 Bug Fixes
