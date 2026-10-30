@@ -65,8 +65,13 @@ public final class TokenBackup {
             SharedPreferences preferences = preferences(context);
             File file = backupFile(context);
             if (!preferences.contains(CURRENT_USER)) {
-                // Only on the first start after an install: a sign-out must stay signed out.
-                if (firstStart(context) && file.isFile()) restore(preferences, file);
+                // Restored only on the first start after an install. Signed out later, the
+                // backup goes, so a sign-out stays one across a reinstall too.
+                if (firstStart(context)) {
+                    if (file.isFile()) restore(preferences, file);
+                } else if (file.isFile() && !file.delete()) {
+                    Logger.printInfo(() -> "TokenBackup could not delete " + file);
+                }
                 return;
             }
             firstStart(context);

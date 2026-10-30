@@ -52,8 +52,13 @@ public final class TokenBackup {
             if (type == null) return;
             File file = backupFile(context);
             if (manager.getAccountsByType(type).length == 0) {
-                // Only on the first start after an install: a sign-out must stay signed out.
-                if (firstStart(context) && file.isFile()) restore(context, manager, type, file);
+                // Restored only on the first start after an install. Signed out later, the
+                // backup goes, so a sign-out stays one across a reinstall too.
+                if (firstStart(context)) {
+                    if (file.isFile()) restore(context, manager, type, file);
+                } else if (file.isFile() && !file.delete()) {
+                    Logger.printInfo(() -> "TokenBackup could not delete " + file);
+                }
                 return;
             }
             firstStart(context);
