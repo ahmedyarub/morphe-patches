@@ -52,16 +52,18 @@ public final class TokenBackup {
             if (type == null) return;
             File file = backupFile(context);
             if (manager.getAccountsByType(type).length == 0) {
-                // Restored only on the first start after an install. Signed out later, the
-                // backup goes, so a sign-out stays one across a reinstall too.
+                // Restored only on the first start after an install. Signed out after having
+                // been signed in, the backup goes, so a sign-out stays one across a reinstall
+                // too; a restore that did not take keeps it.
                 if (firstStart(context)) {
                     if (file.isFile()) restore(context, manager, type, file);
-                } else if (file.isFile() && !file.delete()) {
+                } else if (state(context).getBoolean("signedIn", false) && file.isFile() && !file.delete()) {
                     Logger.printInfo(() -> "TokenBackup could not delete " + file);
                 }
                 return;
             }
             firstStart(context);
+            state(context).edit().putBoolean("signedIn", true).apply();
             new Thread(() -> backUp(context, manager, type, file), "morphe-token-backup").start();
         } catch (Throwable ex) {
             Logger.printException(() -> "TokenBackup failed", ex);
@@ -148,8 +150,12 @@ public final class TokenBackup {
     }
 
     /** True the first time this install calls it. */
+    private static SharedPreferences state(Context context) {
+        return context.getSharedPreferences("morphe_token_backup", Context.MODE_PRIVATE);
+    }
+
     private static boolean firstStart(Context context) {
-        SharedPreferences state = context.getSharedPreferences("morphe_token_backup", Context.MODE_PRIVATE);
+        SharedPreferences state = state(context);
         if (state.getBoolean("started", false)) return false;
         state.edit().putBoolean("started", true).commit();
         return true;
