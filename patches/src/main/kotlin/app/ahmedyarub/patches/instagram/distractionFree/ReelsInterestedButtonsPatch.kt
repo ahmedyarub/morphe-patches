@@ -7,6 +7,7 @@ import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.StringComparisonType
 import app.morphe.patcher.extensions.InstructionExtensions.addInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
+import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
 import app.morphe.patcher.extensions.InstructionExtensions.instructions
 import app.morphe.patcher.patch.PatchException
 import app.morphe.patcher.patch.bytecodePatch
@@ -14,8 +15,12 @@ import app.morphe.patcher.string
 import app.morphe.util.getReference
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
+import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
+import com.android.tools.smali.dexlib2.iface.reference.StringReference
 
 private const val REELS_BUTTONS_CLASS = "Lapp/ahmedyarub/extension/instagram/ReelsButtons;"
 private const val MEDIA_OPTION = "Lcom/instagram/feed/media/mediaoption/MediaOption\$Option;"
@@ -43,6 +48,15 @@ private object FindMoreButtonFingerprint : Fingerprint(
 private object AddMenuRowFingerprint : Fingerprint(
     returnType = "V",
     strings = listOf(string("MoreOptionsHelper_addBottomSheetRowItem", StringComparisonType.CONTAINS)),
+)
+
+/**
+ * The Reels ⋯ menu's option list. A reel flag adds Interested with Not interested; failing it,
+ * another adds Not interested alone. Which reels get the first depends on a server experiment.
+ */
+private object ReelsMenuOptionsFingerprint : Fingerprint(
+    returnType = "Ljava/util/List;",
+    strings = listOf("interested", "not_interested", "why_am_i_seeing_this"),
 )
 
 private object MoreTagIdFingerprint : Fingerprint(
@@ -97,6 +111,41 @@ val reelsInterestedButtonsPatch = bytecodePatch(
             }
         }
         OptionHandlerFingerprint.changeString("optionHandler", handler ?: throw PatchException("No option handler on the menu helper"))
+
+        // Whenever the menu offers Not interested, it offers Interested too.
+        ReelsMenuOptionsFingerprint.method.apply {
+            val notInterested = instructions.indexOfFirst {
+                it.getReference<StringReference>()?.string == "not_interested"
+            }
+            val bothFlag = instructions.take(notInterested).last { it.opcode == Opcode.IGET_BOOLEAN } as TwoRegisterInstruction
+            val branch = instructions.drop(notInterested).first { it.opcode == Opcode.IF_EQZ }
+            val targetAddress = instructions.take(branch.location.index).sumOf { it.codeUnits } +
+                (branch as OffsetInstruction).codeOffset
+            var address = 0
+            val target = instructions.first { instruction -> (address == targetAddress).also { address += instruction.codeUnits } }
+            if (target.opcode != Opcode.IGET_BOOLEAN) throw PatchException("Unexpected Reels menu options")
+            val scratch = (getInstruction(notInterested) as OneRegisterInstruction).registerA
+            addInstructions(
+                notInterested,
+                """
+                    iget-boolean v$scratch, v${bothFlag.registerB}, ${target.getReference<FieldReference>()}
+                    or-int/2addr v${bothFlag.registerA}, v$scratch
+                """,
+            )
+        }
+
+        // The menu's options, for their labels.
+        OverflowSheetPresenterFingerprint.method.apply {
+            val linkedListRead = instructions.withIndex().firstOrNull { (_, instruction) ->
+                instruction.opcode == Opcode.IGET_OBJECT &&
+                    instruction.getReference<FieldReference>()?.type == "Ljava/util/LinkedList;"
+            } ?: throw PatchException("No LinkedList field read found in the sheet presenter")
+            val listRegister = getInstruction<TwoRegisterInstruction>(linkedListRead.index).registerA
+            addInstruction(
+                linkedListRead.index + 1,
+                "invoke-static { v$listRegister }, $REELS_BUTTONS_CLASS->onMenuOptions(Ljava/util/List;)V",
+            )
+        }
 
         AddMenuRowFingerprint.method.addInstruction(
             0,

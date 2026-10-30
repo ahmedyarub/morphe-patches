@@ -14,8 +14,10 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,10 +25,9 @@ import java.util.List;
 import app.morphe.extension.shared.Logger;
 
 /**
- * Interested and Not interested buttons above the Reels side bar. A tap opens the reel's ⋯ menu,
- * unseen, so the app binds its options helper to that reel, then runs the helper's own handler for
- * the option and closes the menu. Whether, and how, the menu lists the options themselves depends
- * on server experiments, so they are not looked for in it.
+ * Interested and Not interested buttons above the Reels side bar. A tap opens the reel's ⋯ menu
+ * and taps the option of the same name in it, so the app handles it as if picked from the menu.
+ * Should the menu not list the option, the options helper the menu bound to the reel runs it.
  *
  * The side bar is drawn by Litho, which does not take views of its own, so the buttons are a
  * column of their own, kept above the like button of the reel on screen as it scrolls. It starts
@@ -48,6 +49,9 @@ public final class ReelsButtons {
     private static volatile WeakReference<View> currentLike = new WeakReference<>(null);
 
     private static volatile WeakReference<Object> menuHelper = new WeakReference<>(null);
+    private static volatile String interestedLabel;
+    private static volatile String notInterestedLabel;
+    private static final long LABEL_WAIT_MS = 1500;
     private static volatile String pendingAction;
     private static volatile long pendingSince;
 
@@ -299,29 +303,81 @@ public final class ReelsButtons {
             pendingAction = null;
             if (SystemClock.uptimeMillis() - pendingSince > PENDING_TIMEOUT_MS) return;
 
-            root.setAlpha(0f);
-            root.post(() -> {
-                try {
-                    Object helper = menuHelper.get();
-                    if (helper != null) {
-                        Class<?> optionClass = Class.forName(OPTION_CLASS, false, helper.getClass().getClassLoader());
-                        @SuppressWarnings({"unchecked", "rawtypes"})
-                        Object option = Enum.valueOf((Class) optionClass, action);
-                        Method handler = helper.getClass().getDeclaredMethod(optionHandler(), optionClass);
-                        handler.setAccessible(true);
-                        handler.invoke(helper, option);
-                    }
-                } catch (Throwable ex) {
-                    Logger.printException(() -> "ReelsButtons could not run " + action, ex);
+            boolean[] done = new boolean[1];
+            ViewTreeObserver.OnGlobalLayoutListener tapOption = new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    String label = INTERESTED.equals(action) ? interestedLabel : notInterestedLabel;
+                    TextView option = label == null ? null : findText(root, label);
+                    if (done[0] || option == null) return;
+                    done[0] = true;
+                    root.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                    tap(option);
                 }
+            };
+            root.getViewTreeObserver().addOnGlobalLayoutListener(tapOption);
+            // A menu without the option: the helper runs it, and the menu closes.
+            root.postDelayed(() -> {
+                if (done[0]) return;
+                done[0] = true;
+                root.getViewTreeObserver().removeOnGlobalLayoutListener(tapOption);
+                runThroughHelper(action);
                 try {
                     fragment.getClass().getMethod("dismissAllowingStateLoss").invoke(fragment);
                 } catch (Throwable ignored) {
                 }
-            });
+            }, LABEL_WAIT_MS);
         } catch (Throwable ex) {
             Logger.printException(() -> "ReelsButtons onActionSheetCreated failed", ex);
         }
+    }
+
+    private static void runThroughHelper(String action) {
+        try {
+            Object helper = menuHelper.get();
+            if (helper == null) return;
+            Class<?> optionClass = Class.forName(OPTION_CLASS, false, helper.getClass().getClassLoader());
+            @SuppressWarnings({"unchecked", "rawtypes"})
+            Object option = Enum.valueOf((Class) optionClass, action);
+            Method handler = helper.getClass().getDeclaredMethod(optionHandler(), optionClass);
+            handler.setAccessible(true);
+            handler.invoke(helper, option);
+        } catch (Throwable ex) {
+            Logger.printException(() -> "ReelsButtons could not run " + action, ex);
+        }
+    }
+
+    /** Injection point: the overflow menu's options as it is presented, for their labels. */
+    public static void onMenuOptions(List<Object> options) {
+        try {
+            if (options == null) return;
+            for (Object option : options) {
+                List<String> strings = new ArrayList<>();
+                for (Field field : option.getClass().getDeclaredFields()) {
+                    if (field.getType() != String.class) continue;
+                    field.setAccessible(true);
+                    Object value = field.get(option);
+                    if (value != null) strings.add((String) value);
+                }
+                if (strings.size() != 2) continue;
+                if (strings.remove("interested")) interestedLabel = strings.get(0);
+                else if (strings.remove("not_interested")) notInterestedLabel = strings.get(0);
+            }
+        } catch (Throwable ex) {
+            Logger.printException(() -> "ReelsButtons onMenuOptions failed", ex);
+        }
+    }
+
+    private static TextView findText(View view, String text) {
+        if (view instanceof TextView && text.contentEquals(((TextView) view).getText())) return (TextView) view;
+        if (view instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) view;
+            for (int i = 0; i < group.getChildCount(); i++) {
+                TextView found = findText(group.getChildAt(i), text);
+                if (found != null) return found;
+            }
+        }
+        return null;
     }
 
     // endregion
