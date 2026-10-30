@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-10-30T12:40:05",
-  "description": "## [1.22.0-dev.2](https://github.com/ahmedyarub/morphe-patches/compare/v1.22.0-dev.1...v1.22.0-dev.2) (2026-10-30)\n\n### 🐛 Bug Fixes\n\n* **Instagram:** Draw the Reels buttons under bottom sheets ([45c0136](https://github.com/ahmedyarub/morphe-patches/commit/45c0136b6080c641a7c960161c0007bfc37085e7))\n* **Instagram:** Keep Interested in the Reels menu after a reinstall ([ff1bf96](https://github.com/ahmedyarub/morphe-patches/commit/ff1bf968f840724480f06aab5dfa134cc6eafbc2))\n* **Instagram:** List Interested in the Reels menu and tap it by its label ([4828eb5](https://github.com/ahmedyarub/morphe-patches/commit/4828eb52dc73d4617f84d99b8a4994f5a32c9474))\n* **Instagram:** Run Reels interested buttons through the menu's own handler ([f6d11c3](https://github.com/ahmedyarub/morphe-patches/commit/f6d11c35739a312ad261b93bf199e292e6b8816e))\n\n### ✨ New Features\n\n* Follow button on X posts, Reels buttons and cards, keep signed in ([8b7d701](https://github.com/ahmedyarub/morphe-patches/commit/8b7d701cc61e3c18ebbbe72f92a999681f68feb3))",
-  "download_url": "https://github.com/ahmedyarub/morphe-patches/releases/download/v1.22.0-dev.2/patches-1.22.0-dev.2.mpp",
+  "created_at": "2026-10-30T12:50:12",
+  "description": "## [1.22.0-dev.3](https://github.com/ahmedyarub/morphe-patches/compare/v1.22.0-dev.2...v1.22.0-dev.3) (2026-10-30)\n\n### 🐛 Bug Fixes\n\n* Address review of the Reels buttons, Instagram backup and X follow button ([07edb6e](https://github.com/ahmedyarub/morphe-patches/commit/07edb6e8c82b5ea45b15c773e4f0bef31d291cb1))",
+  "download_url": "https://github.com/ahmedyarub/morphe-patches/releases/download/v1.22.0-dev.3/patches-1.22.0-dev.3.mpp",
   "signature_download_url": "",
-  "version": "1.22.0-dev.2"
+  "version": "1.22.0-dev.3"
 }

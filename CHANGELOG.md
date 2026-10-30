@@ -1,3 +1,9 @@
+## [1.22.0-dev.3](https://github.com/ahmedyarub/morphe-patches/compare/v1.22.0-dev.2...v1.22.0-dev.3) (2026-10-30)
+
+### 🐛 Bug Fixes
+
+* Address review of the Reels buttons, Instagram backup and X follow button ([07edb6e](https://github.com/ahmedyarub/morphe-patches/commit/07edb6e8c82b5ea45b15c773e4f0bef31d291cb1))
+
 ## [1.22.0-dev.2](https://github.com/ahmedyarub/morphe-patches/compare/v1.22.0-dev.1...v1.22.0-dev.2) (2026-10-30)
 
 ### 🐛 Bug Fixes
