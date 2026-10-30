@@ -46,6 +46,8 @@ public final class TokenBackup {
     private static volatile Object authStore;
     private static volatile JSONObject pendingAuth;
     private static volatile Runnable backup;
+    /** Set while restored authorization headers are waiting for their store. */
+    private static volatile Context appContext;
 
     private TokenBackup() {
     }
@@ -69,8 +71,8 @@ public final class TokenBackup {
                 // been signed in, the backup goes, so a sign-out stays one across a reinstall
                 // too; a restore that did not take keeps it.
                 if (firstStart(context)) {
-                    // A restored session is a signed-in one, should it be signed out in this run.
-                    if (file.isFile() && restore(preferences, file)) state(context).edit().putBoolean("signedIn", true).apply();
+                    // Signed in once its authorization headers are back (see onStoreOpened).
+                    if (file.isFile() && restore(preferences, file)) appContext = context.getApplicationContext();
                 } else if (state(context).getBoolean("signedIn", false) && file.isFile() && !file.delete()) {
                     Logger.printInfo(() -> "TokenBackup could not delete " + file);
                 }
@@ -109,6 +111,10 @@ public final class TokenBackup {
                 putString.invoke(editor, key, pending.getString(key));
             }
             editor.getClass().getMethod("commit").invoke(editor);
+            // A session whose headers are back is a signed-in one, should it be signed out in
+            // this run; one whose headers never apply keeps its backup.
+            Context context = appContext;
+            if (context != null) state(context).edit().putBoolean("signedIn", true).apply();
             Logger.printInfo(() -> "TokenBackup restored " + pending.length() + " authorization headers");
         } catch (Throwable ex) {
             Logger.printException(() -> "TokenBackup could not restore the authorization headers", ex);
