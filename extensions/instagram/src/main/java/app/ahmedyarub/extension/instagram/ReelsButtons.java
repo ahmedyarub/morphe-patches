@@ -15,10 +15,8 @@ import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,8 +24,10 @@ import java.util.List;
 import app.morphe.extension.shared.Logger;
 
 /**
- * Interested and Not interested buttons above the Reels side bar. A tap opens the reel's ⋯ menu
- * and taps the option of the same name in it, so the app handles it as if picked from the menu.
+ * Interested and Not interested buttons above the Reels side bar. A tap opens the reel's ⋯ menu,
+ * unseen, so the app binds its options helper to that reel, then runs the helper's own handler for
+ * the option and closes the menu. Whether, and how, the menu lists the options themselves depends
+ * on server experiments, so they are not looked for in it.
  *
  * The side bar is drawn by Litho, which does not take views of its own, so the buttons are a
  * column over the activity, kept above the like button of the reel on screen as it scrolls.
@@ -36,17 +36,23 @@ import app.morphe.extension.shared.Logger;
 public final class ReelsButtons {
     private static final String MORE_TAG = "clips_ufi_more_button_component";
     private static final String LIKE_TAG = "clips_ufi_like_button_component";
-    private static final String INTERESTED = "interested";
-    private static final String NOT_INTERESTED = "not_interested";
+    private static final String INTERESTED = "INTERESTED";
+    private static final String NOT_INTERESTED = "NOT_INTERESTED";
+    private static final String OPTION_CLASS = "com.instagram.feed.media.mediaoption.MediaOption$Option";
     private static final String COLUMN_TAG = "morphe_reels_buttons";
     private static final long PENDING_TIMEOUT_MS = 4000;
 
-    private static volatile String interestedLabel;
-    private static volatile String notInterestedLabel;
+    private static volatile WeakReference<Object> menuHelper = new WeakReference<>(null);
+    private static volatile WeakReference<View> openSheet = new WeakReference<>(null);
     private static volatile String pendingAction;
     private static volatile long pendingSince;
 
     private ReelsButtons() {
+    }
+
+    /** The options helper's method running an option. Rewritten by the patch. */
+    private static String optionHandler() {
+        return "optionHandler";
     }
 
     /** The integer tag the ⋯ button may carry instead of its name. Rewritten by the patch. */
@@ -193,6 +199,8 @@ public final class ReelsButtons {
             }
         }
         View like = best == null ? null : best.like.get();
+        View sheet = openSheet.get();
+        if (sheet != null && sheet.isAttachedToWindow() && sheet.isShown()) like = null;
         if (like == null) {
             if (column.getVisibility() != View.GONE) column.setVisibility(View.GONE);
             return null;
@@ -223,66 +231,47 @@ public final class ReelsButtons {
 
     // region Menu
 
-    /** Injection point: the overflow menu's options as it is presented. */
-    public static void onMenuOptions(List<Object> options) {
-        try {
-            if (options == null) return;
-            for (Object option : options) {
-                List<String> strings = new ArrayList<>();
-                for (Field field : option.getClass().getDeclaredFields()) {
-                    if (field.getType() != String.class) continue;
-                    field.setAccessible(true);
-                    Object value = field.get(option);
-                    if (value != null) strings.add((String) value);
-                }
-                if (strings.size() != 2) continue;
-                if (strings.remove(INTERESTED)) interestedLabel = strings.get(0);
-                else if (strings.remove(NOT_INTERESTED)) notInterestedLabel = strings.get(0);
-            }
-        } catch (Throwable ex) {
-            Logger.printException(() -> "ReelsButtons onMenuOptions failed", ex);
-        }
+    /** Injection point: the ⋯ menu's options helper, bound to the reel whose menu is being built. */
+    public static void onMenuHelper(Object helper) {
+        menuHelper = new WeakReference<>(helper);
     }
 
-    /** Injection point: a bottom sheet's view was created. Taps the requested option in the ⋯ menu. */
+    /** Injection point: a bottom sheet's view was created. Runs the requested option of a ⋯ menu. */
     public static void onActionSheetCreated(Object fragment) {
-        String action = pendingAction;
-        if (action == null) return;
-        if (SystemClock.uptimeMillis() - pendingSince > PENDING_TIMEOUT_MS) {
-            pendingAction = null;
-            return;
-        }
         try {
             Method getView = fragment.getClass().getMethod("getView");
             View root = (View) getView.invoke(fragment);
             if (root == null) return;
-            root.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                @Override
-                public void onGlobalLayout() {
-                    String label = INTERESTED.equals(pendingAction) ? interestedLabel : notInterestedLabel;
-                    if (pendingAction == null || label == null) return;
-                    TextView option = findText(root, label);
-                    if (option == null) return;
-                    pendingAction = null;
-                    root.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                    tap(option);
+            openSheet = new WeakReference<>(root);
+
+            String action = pendingAction;
+            if (action == null) return;
+            pendingAction = null;
+            if (SystemClock.uptimeMillis() - pendingSince > PENDING_TIMEOUT_MS) return;
+
+            root.setAlpha(0f);
+            root.post(() -> {
+                try {
+                    Object helper = menuHelper.get();
+                    if (helper != null) {
+                        Class<?> optionClass = Class.forName(OPTION_CLASS, false, helper.getClass().getClassLoader());
+                        @SuppressWarnings({"unchecked", "rawtypes"})
+                        Object option = Enum.valueOf((Class) optionClass, action);
+                        Method handler = helper.getClass().getDeclaredMethod(optionHandler(), optionClass);
+                        handler.setAccessible(true);
+                        handler.invoke(helper, option);
+                    }
+                } catch (Throwable ex) {
+                    Logger.printException(() -> "ReelsButtons could not run " + action, ex);
+                }
+                try {
+                    fragment.getClass().getMethod("dismissAllowingStateLoss").invoke(fragment);
+                } catch (Throwable ignored) {
                 }
             });
         } catch (Throwable ex) {
             Logger.printException(() -> "ReelsButtons onActionSheetCreated failed", ex);
         }
-    }
-
-    private static TextView findText(View view, String text) {
-        if (view instanceof TextView && text.contentEquals(((TextView) view).getText())) return (TextView) view;
-        if (view instanceof ViewGroup) {
-            ViewGroup group = (ViewGroup) view;
-            for (int i = 0; i < group.getChildCount(); i++) {
-                TextView found = findText(group.getChildAt(i), text);
-                if (found != null) return found;
-            }
-        }
-        return null;
     }
 
     // endregion
