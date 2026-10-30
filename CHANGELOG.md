@@ -1,3 +1,16 @@
+## [1.22.0-dev.2](https://github.com/ahmedyarub/morphe-patches/compare/v1.22.0-dev.1...v1.22.0-dev.2) (2026-10-30)
+
+### 🐛 Bug Fixes
+
+* **Instagram:** Draw the Reels buttons under bottom sheets ([45c0136](https://github.com/ahmedyarub/morphe-patches/commit/45c0136b6080c641a7c960161c0007bfc37085e7))
+* **Instagram:** Keep Interested in the Reels menu after a reinstall ([ff1bf96](https://github.com/ahmedyarub/morphe-patches/commit/ff1bf968f840724480f06aab5dfa134cc6eafbc2))
+* **Instagram:** List Interested in the Reels menu and tap it by its label ([4828eb5](https://github.com/ahmedyarub/morphe-patches/commit/4828eb52dc73d4617f84d99b8a4994f5a32c9474))
+* **Instagram:** Run Reels interested buttons through the menu's own handler ([f6d11c3](https://github.com/ahmedyarub/morphe-patches/commit/f6d11c35739a312ad261b93bf199e292e6b8816e))
+
+### ✨ New Features
+
+* Follow button on X posts, Reels buttons and cards, keep signed in ([8b7d701](https://github.com/ahmedyarub/morphe-patches/commit/8b7d701cc61e3c18ebbbe72f92a999681f68feb3))
+
 ## [1.22.0-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.21.3...v1.22.0-dev.1) (2026-10-30)
 
 ### ✨ New Features
