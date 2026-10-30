@@ -15,12 +15,9 @@ import app.morphe.patcher.string
 import app.morphe.util.getReference
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction
-import com.android.tools.smali.dexlib2.iface.instruction.OffsetInstruction
-import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference
-import com.android.tools.smali.dexlib2.iface.reference.StringReference
 
 private const val REELS_BUTTONS_CLASS = "Lapp/ahmedyarub/extension/instagram/ReelsButtons;"
 private const val MEDIA_OPTION = "Lcom/instagram/feed/media/mediaoption/MediaOption\$Option;"
@@ -50,13 +47,9 @@ private object AddMenuRowFingerprint : Fingerprint(
     strings = listOf(string("MoreOptionsHelper_addBottomSheetRowItem", StringComparisonType.CONTAINS)),
 )
 
-/**
- * The Reels ⋯ menu's option list. A reel flag adds Interested with Not interested; failing it,
- * another adds Not interested alone. Which reels get the first depends on a server experiment.
- */
-private object ReelsMenuOptionsFingerprint : Fingerprint(
-    returnType = "Ljava/util/List;",
-    strings = listOf("interested", "not_interested", "why_am_i_seeing_this"),
+/** The Reels ⋯ menu: its header items, then its rows, Interested and Not interested among them. */
+private object ReelsMenuFingerprint : Fingerprint(
+    strings = listOf(string("MoreOptionsController_getBottomSheetHeaderItems", StringComparisonType.CONTAINS)),
 )
 
 private object MoreTagIdFingerprint : Fingerprint(
@@ -112,26 +105,22 @@ val reelsInterestedButtonsPatch = bytecodePatch(
         }
         OptionHandlerFingerprint.changeString("optionHandler", handler ?: throw PatchException("No option handler on the menu helper"))
 
-        // Whenever the menu offers Not interested, it offers Interested too.
-        ReelsMenuOptionsFingerprint.method.apply {
-            val notInterested = instructions.indexOfFirst {
-                it.getReference<StringReference>()?.string == "not_interested"
+        // The menu lists Interested (SEE_MORE) only while two server config flags say so, which a
+        // reinstall resets, though it lists Not interested regardless. The check of those flags,
+        // the last the menu makes before Interested, passes.
+        ReelsMenuFingerprint.method.instructions.toList().let { menu ->
+            val seeMore = menu.indexOfFirst {
+                it.getReference<FieldReference>()?.let { field -> field.definingClass == MEDIA_OPTION && field.name == "SEE_MORE" } == true
             }
-            val bothFlag = instructions.take(notInterested).last { it.opcode == Opcode.IGET_BOOLEAN } as TwoRegisterInstruction
-            val branch = instructions.drop(notInterested).first { it.opcode == Opcode.IF_EQZ }
-            val targetAddress = instructions.take(branch.location.index).sumOf { it.codeUnits } +
-                (branch as OffsetInstruction).codeOffset
-            var address = 0
-            val target = instructions.first { instruction -> (address == targetAddress).also { address += instruction.codeUnits } }
-            if (target.opcode != Opcode.IGET_BOOLEAN) throw PatchException("Unexpected Reels menu options")
-            val scratch = (getInstruction(notInterested) as OneRegisterInstruction).registerA
-            addInstructions(
-                notInterested,
-                """
-                    iget-boolean v$scratch, v${bothFlag.registerB}, ${target.getReference<FieldReference>()}
-                    or-int/2addr v${bothFlag.registerA}, v$scratch
-                """,
-            )
+            if (seeMore < 0) throw PatchException("The Reels menu never adds Interested")
+            val flagsCheck = menu.take(seeMore).last { instruction ->
+                instruction.opcode == Opcode.INVOKE_STATIC && instruction.getReference<MethodReference>()?.let {
+                    it.returnType == "Z" && it.parameterTypes.lastOrNull()?.toString() == "Lcom/instagram/common/session/UserSession;"
+                } == true
+            }.getReference<MethodReference>()!!
+            mutableClassDefBy(flagsCheck.definingClass).methods.first {
+                it.name == flagsCheck.name && it.parameterTypes.map { type -> type.toString() } == flagsCheck.parameterTypes.map { type -> type.toString() }
+            }.addInstructions(0, "const/4 v0, 0x1\nreturn v0")
         }
 
         // The menu's options, for their labels.
