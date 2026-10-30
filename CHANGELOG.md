@@ -1,3 +1,11 @@
+## [1.22.0-dev.4](https://github.com/ahmedyarub/morphe-patches/compare/v1.22.0-dev.3...v1.22.0-dev.4) (2026-10-30)
+
+### 🐛 Bug Fixes
+
+* Count a restored session as signed in ([2de79ea](https://github.com/ahmedyarub/morphe-patches/commit/2de79ea1414396b0a667c517a1ff5f733c1ffb52))
+* Drop the token backup on sign-out and run the Reels menu's own options ([ab559bc](https://github.com/ahmedyarub/morphe-patches/commit/ab559bc3ff57aa36efd822a8207efe0dc74d0c57))
+* Keep the token backup when a restore did not take ([e918d49](https://github.com/ahmedyarub/morphe-patches/commit/e918d4954795d20c2f77b16df043ad5e2b924056))
+
 ## [1.22.0-dev.3](https://github.com/ahmedyarub/morphe-patches/compare/v1.22.0-dev.2...v1.22.0-dev.3) (2026-10-30)
 
 ### 🐛 Bug Fixes
