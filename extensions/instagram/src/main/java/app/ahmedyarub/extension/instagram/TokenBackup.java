@@ -65,11 +65,19 @@ public final class TokenBackup {
             SharedPreferences preferences = preferences(context);
             File file = backupFile(context);
             if (!preferences.contains(CURRENT_USER)) {
-                // Only on the first start after an install: a sign-out must stay signed out.
-                if (firstStart(context) && file.isFile()) restore(preferences, file);
+                // Restored only on the first start after an install. Signed out after having
+                // been signed in, the backup goes, so a sign-out stays one across a reinstall
+                // too; a restore that did not take keeps it.
+                if (firstStart(context)) {
+                    // A restored session is a signed-in one, should it be signed out in this run.
+                    if (file.isFile() && restore(preferences, file)) state(context).edit().putBoolean("signedIn", true).apply();
+                } else if (state(context).getBoolean("signedIn", false) && file.isFile() && !file.delete()) {
+                    Logger.printInfo(() -> "TokenBackup could not delete " + file);
+                }
                 return;
             }
             firstStart(context);
+            state(context).edit().putBoolean("signedIn", true).apply();
             // Backed up once the app opens its authorization store, whenever that is.
             backup = () -> backUp(preferences, file);
             if (authStore != null) startBackup();
@@ -141,7 +149,7 @@ public final class TokenBackup {
         }
     }
 
-    private static void restore(SharedPreferences preferences, File file) {
+    private static boolean restore(SharedPreferences preferences, File file) {
         try {
             JSONObject backup = new JSONObject(new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8));
             SharedPreferences.Editor editor = preferences.edit();
@@ -168,8 +176,10 @@ public final class TokenBackup {
             editor.commit();
             pendingAuth = backup.getJSONObject("auth");
             Logger.printInfo(() -> "TokenBackup restored the signed-in session's preferences");
+            return true;
         } catch (Throwable ex) {
             Logger.printException(() -> "TokenBackup could not restore the session", ex);
+            return false;
         }
     }
 
@@ -191,8 +201,12 @@ public final class TokenBackup {
     }
 
     /** True the first time this install calls it. */
+    private static SharedPreferences state(Context context) {
+        return context.getSharedPreferences("morphe_token_backup", Context.MODE_PRIVATE);
+    }
+
     private static boolean firstStart(Context context) {
-        SharedPreferences state = context.getSharedPreferences("morphe_token_backup", Context.MODE_PRIVATE);
+        SharedPreferences state = state(context);
         if (state.getBoolean("started", false)) return false;
         state.edit().putBoolean("started", true).commit();
         return true;

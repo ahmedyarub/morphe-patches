@@ -52,11 +52,19 @@ public final class TokenBackup {
             if (type == null) return;
             File file = backupFile(context);
             if (manager.getAccountsByType(type).length == 0) {
-                // Only on the first start after an install: a sign-out must stay signed out.
-                if (firstStart(context) && file.isFile()) restore(context, manager, type, file);
+                // Restored only on the first start after an install. Signed out after having
+                // been signed in, the backup goes, so a sign-out stays one across a reinstall
+                // too; a restore that did not take keeps it.
+                if (firstStart(context)) {
+                    // A restored session is a signed-in one, should it be signed out in this run.
+                    if (file.isFile() && restore(context, manager, type, file)) state(context).edit().putBoolean("signedIn", true).apply();
+                } else if (state(context).getBoolean("signedIn", false) && file.isFile() && !file.delete()) {
+                    Logger.printInfo(() -> "TokenBackup could not delete " + file);
+                }
                 return;
             }
             firstStart(context);
+            state(context).edit().putBoolean("signedIn", true).apply();
             new Thread(() -> backUp(context, manager, type, file), "morphe-token-backup").start();
         } catch (Throwable ex) {
             Logger.printException(() -> "TokenBackup failed", ex);
@@ -113,10 +121,10 @@ public final class TokenBackup {
         }
     }
 
-    private static void restore(Context context, AccountManager manager, String type, File file) {
+    private static boolean restore(Context context, AccountManager manager, String type, File file) {
         try {
             JSONObject backup = new JSONObject(new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8));
-            if (!type.equals(backup.optString("type"))) return;
+            if (!type.equals(backup.optString("type"))) return false;
             JSONArray accounts = backup.getJSONArray("accounts");
             for (int i = 0; i < accounts.length(); i++) {
                 JSONObject saved = accounts.getJSONObject(i);
@@ -137,14 +145,20 @@ public final class TokenBackup {
             long current = backup.optLong(CURRENT_USER, -1);
             if (current != -1) preferences(context).edit().putLong(CURRENT_USER, current).commit();
             Logger.printInfo(() -> "TokenBackup restored " + accounts.length() + " accounts");
+            return manager.getAccountsByType(type).length > 0;
         } catch (Throwable ex) {
             Logger.printException(() -> "TokenBackup could not restore the accounts", ex);
+            return false;
         }
     }
 
     /** True the first time this install calls it. */
+    private static SharedPreferences state(Context context) {
+        return context.getSharedPreferences("morphe_token_backup", Context.MODE_PRIVATE);
+    }
+
     private static boolean firstStart(Context context) {
-        SharedPreferences state = context.getSharedPreferences("morphe_token_backup", Context.MODE_PRIVATE);
+        SharedPreferences state = state(context);
         if (state.getBoolean("started", false)) return false;
         state.edit().putBoolean("started", true).commit();
         return true;

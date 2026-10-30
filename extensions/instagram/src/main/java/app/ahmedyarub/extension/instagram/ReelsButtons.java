@@ -39,8 +39,9 @@ import app.morphe.extension.shared.Logger;
 public final class ReelsButtons {
     private static final String MORE_TAG = "clips_ufi_more_button_component";
     private static final String LIKE_TAG = "clips_ufi_like_button_component";
-    private static final String INTERESTED = "INTERESTED";
-    private static final String NOT_INTERESTED = "NOT_INTERESTED";
+    /** The options the Reels menu's Interested and Not interested rows run. */
+    private static final String INTERESTED = "SEE_MORE";
+    private static final String NOT_INTERESTED = "SEE_FEWER";
     private static final String OPTION_CLASS = "com.instagram.feed.media.mediaoption.MediaOption$Option";
     private static final String COLUMN_TAG = "morphe_reels_buttons";
     private static final long PENDING_TIMEOUT_MS = 4000;
