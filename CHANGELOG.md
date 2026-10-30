@@ -1,3 +1,9 @@
+## [1.22.0-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.21.3...v1.22.0-dev.1) (2026-10-30)
+
+### ✨ New Features
+
+* **Instagram:** Block every card shown between stories ([e4624d2](https://github.com/ahmedyarub/morphe-patches/commit/e4624d255494dca6da0118f02d1ccc812c0df1b6))
+
 ## [1.21.3](https://github.com/ahmedyarub/morphe-patches/compare/v1.21.2...v1.21.3) (2026-10-29)
 
 ### 🐛 Bug Fixes
