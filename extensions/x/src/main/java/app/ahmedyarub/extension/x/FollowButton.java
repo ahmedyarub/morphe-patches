@@ -37,9 +37,13 @@ public final class FollowButton {
         handler = friendshipHandler;
     }
 
-    /** Whether a post by this author gets the button: every author but the signed-in user. */
+    /**
+     * Whether a post by this author gets the button: every author but the signed-in user, and none
+     * while the signed-in user is not known, which would put it on their own posts.
+     */
     public static boolean shouldShow(long authorId) {
-        return authorId != selfId();
+        long self = selfId();
+        return self != -1 && authorId != self;
     }
 
     /** The signed-in account, read each time: switching accounts changes it. */

@@ -54,6 +54,7 @@ public final class ReelsButtons {
     private static final long LABEL_WAIT_MS = 1500;
     private static volatile String pendingAction;
     private static volatile long pendingSince;
+    private static volatile long menuBuiltAt;
 
     private ReelsButtons() {
     }
@@ -277,6 +278,7 @@ public final class ReelsButtons {
     /** Injection point: the ⋯ menu's options helper, bound to the reel whose menu is being built. */
     public static void onMenuHelper(Object helper) {
         menuHelper = new WeakReference<>(helper);
+        menuBuiltAt = SystemClock.uptimeMillis();
     }
 
     /** Injection point: a bottom sheet's view was created. Runs the requested option of a ⋯ menu. */
@@ -298,8 +300,10 @@ public final class ReelsButtons {
                 }
             });
 
+            // Only the Reels menu the button opened: its helper built the rows since the tap.
+            // Any other sheet is left alone.
             String action = pendingAction;
-            if (action == null) return;
+            if (action == null || menuBuiltAt < pendingSince) return;
             pendingAction = null;
             if (SystemClock.uptimeMillis() - pendingSince > PENDING_TIMEOUT_MS) return;
 

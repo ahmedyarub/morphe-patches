@@ -45,6 +45,7 @@ public final class TokenBackup {
     private static final ThreadLocal<String> opening = new ThreadLocal<>();
     private static volatile Object authStore;
     private static volatile JSONObject pendingAuth;
+    private static volatile Runnable backup;
 
     private TokenBackup() {
     }
@@ -69,14 +70,9 @@ public final class TokenBackup {
                 return;
             }
             firstStart(context);
-            new Thread(() -> {
-                try {
-                    // Let the app open its stores first.
-                    Thread.sleep(20_000);
-                } catch (InterruptedException ignored) {
-                }
-                backUp(preferences, file);
-            }, "morphe-token-backup").start();
+            // Backed up once the app opens its authorization store, whenever that is.
+            backup = () -> backUp(preferences, file);
+            if (authStore != null) startBackup();
         } catch (Throwable ex) {
             Logger.printException(() -> "TokenBackup failed", ex);
         }
@@ -93,6 +89,7 @@ public final class TokenBackup {
         opening.remove();
         if (!AUTH_STORE.equals(name) || store == null) return;
         authStore = store;
+        startBackup();
         JSONObject pending = pendingAuth;
         if (pending == null) return;
         pendingAuth = null;
@@ -108,6 +105,14 @@ public final class TokenBackup {
         } catch (Throwable ex) {
             Logger.printException(() -> "TokenBackup could not restore the authorization headers", ex);
         }
+    }
+
+    /** Runs the backup the app start asked for, once, off the thread that opened the store. */
+    private static synchronized void startBackup() {
+        Runnable task = backup;
+        if (task == null) return;
+        backup = null;
+        new Thread(task, "morphe-token-backup").start();
     }
 
     private static void backUp(SharedPreferences preferences, File file) {
