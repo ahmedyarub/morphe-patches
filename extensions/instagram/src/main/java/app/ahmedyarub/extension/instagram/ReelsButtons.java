@@ -12,7 +12,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
@@ -30,7 +29,10 @@ import app.morphe.extension.shared.Logger;
  * on server experiments, so they are not looked for in it.
  *
  * The side bar is drawn by Litho, which does not take views of its own, so the buttons are a
- * column over the activity, kept above the like button of the reel on screen as it scrolls.
+ * column of their own, kept above the like button of the reel on screen as it scrolls. It starts
+ * over the activity's content; when a bottom sheet such as the ⋯ menu is attached in the same
+ * window, the column moves to where the sheet's branch and the side bar's branch meet, between
+ * the two, so it draws over the reels like their own buttons and under the sheet like them.
  */
 @SuppressWarnings("unused")
 public final class ReelsButtons {
@@ -42,8 +44,10 @@ public final class ReelsButtons {
     private static final String COLUMN_TAG = "morphe_reels_buttons";
     private static final long PENDING_TIMEOUT_MS = 4000;
 
+    private static volatile WeakReference<LinearLayout> currentColumn = new WeakReference<>(null);
+    private static volatile WeakReference<View> currentLike = new WeakReference<>(null);
+
     private static volatile WeakReference<Object> menuHelper = new WeakReference<>(null);
-    private static volatile WeakReference<View> openSheet = new WeakReference<>(null);
     private static volatile String pendingAction;
     private static volatile long pendingSince;
 
@@ -114,8 +118,8 @@ public final class ReelsButtons {
     private static void attach(Activity activity) {
         try {
             View decor = activity.getWindow().getDecorView();
-            FrameLayout content = activity.findViewById(android.R.id.content);
-            if (content == null || content.findViewWithTag(COLUMN_TAG) != null) return;
+            ViewGroup content = activity.findViewById(android.R.id.content);
+            if (content == null || decor.findViewWithTag(COLUMN_TAG) != null) return;
 
             List<SideBar> sideBars = new ArrayList<>();
             SideBar[] shown = new SideBar[1];
@@ -125,7 +129,7 @@ public final class ReelsButtons {
             column.setVisibility(View.GONE);
             column.addView(button(activity, "instagram_thumb_up_outline_24", "Interested", () -> request(INTERESTED, shown[0])));
             column.addView(button(activity, "instagram_thumb_down_outline_24", "Not interested", () -> request(NOT_INTERESTED, shown[0])));
-            content.addView(column, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            content.addView(column, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
             ViewTreeObserver observer = decor.getViewTreeObserver();
             observer.addOnGlobalLayoutListener(() -> {
@@ -133,7 +137,11 @@ public final class ReelsButtons {
                 collect(decor, sideBars);
             });
             observer.addOnPreDrawListener(() -> {
-                shown[0] = place(content, column, sideBars);
+                shown[0] = place(column, sideBars);
+                if (shown[0] != null) {
+                    currentColumn = new WeakReference<>(column);
+                    currentLike = shown[0].like;
+                }
                 return true;
             });
         } catch (Throwable ex) {
@@ -185,8 +193,40 @@ public final class ReelsButtons {
         }
     }
 
+    /**
+     * Moves the column to where the sheet's branch and the side bar's branch meet, right before
+     * the sheet's, so the sheet draws over it as it does over the side bar. A sheet in a window of
+     * its own already does.
+     */
+    private static void placeBelow(View sheet) {
+        LinearLayout column = currentColumn.get();
+        View like = currentLike.get();
+        if (column == null || like == null) return;
+        List<View> sheetPath = new ArrayList<>();
+        for (View view = sheet; view != null; view = view.getParent() instanceof View ? (View) view.getParent() : null) {
+            sheetPath.add(view);
+        }
+        View sideBarBranch = like;
+        for (View view = like; view != null; view = view.getParent() instanceof View ? (View) view.getParent() : null) {
+            int at = sheetPath.indexOf(view);
+            if (at > 0) {
+                ViewGroup meeting = (ViewGroup) view;
+                View sheetBranch = sheetPath.get(at - 1);
+                // A LinearLayout would make room for the column, moving the app's views.
+                if (meeting instanceof LinearLayout) return;
+                if (meeting.indexOfChild(sideBarBranch) > meeting.indexOfChild(sheetBranch)) return;
+                if (column.getParent() == meeting && meeting.indexOfChild(column) == meeting.indexOfChild(sheetBranch) - 1) return;
+                if (column.getParent() instanceof ViewGroup) ((ViewGroup) column.getParent()).removeView(column);
+                meeting.addView(column, meeting.indexOfChild(sheetBranch),
+                        new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                return;
+            }
+            sideBarBranch = view;
+        }
+    }
+
     /** Puts the column above the like button of the side bar most on screen, or hides it. */
-    private static SideBar place(FrameLayout content, LinearLayout column, List<SideBar> sideBars) {
+    private static SideBar place(LinearLayout column, List<SideBar> sideBars) {
         SideBar best = null;
         int bestVisible = 0;
         Rect rect = new Rect();
@@ -199,20 +239,19 @@ public final class ReelsButtons {
             }
         }
         View like = best == null ? null : best.like.get();
-        View sheet = openSheet.get();
-        if (sheet != null && sheet.isAttachedToWindow() && sheet.isShown()) like = null;
-        if (like == null) {
+        View container = column.getParent() instanceof View ? (View) column.getParent() : null;
+        if (like == null || container == null) {
             if (column.getVisibility() != View.GONE) column.setVisibility(View.GONE);
             return null;
         }
         int[] likeAt = new int[2];
-        int[] contentAt = new int[2];
+        int[] containerAt = new int[2];
         like.getLocationOnScreen(likeAt);
-        content.getLocationOnScreen(contentAt);
+        container.getLocationOnScreen(containerAt);
         int width = column.getWidth() > 0 ? column.getWidth() : column.getMeasuredWidth();
         int height = column.getHeight() > 0 ? column.getHeight() : column.getMeasuredHeight();
-        float x = likeAt[0] - contentAt[0] + (like.getWidth() - width) / 2f;
-        float y = likeAt[1] - contentAt[1] - height;
+        float x = likeAt[0] - containerAt[0] - column.getLeft() + (like.getWidth() - width) / 2f;
+        float y = likeAt[1] - containerAt[1] - column.getTop() - height;
         if (column.getTranslationX() != x) column.setTranslationX(x);
         if (column.getTranslationY() != y) column.setTranslationY(y);
         if (column.getVisibility() != View.VISIBLE) column.setVisibility(View.VISIBLE);
@@ -242,7 +281,18 @@ public final class ReelsButtons {
             Method getView = fragment.getClass().getMethod("getView");
             View root = (View) getView.invoke(fragment);
             if (root == null) return;
-            openSheet = new WeakReference<>(root);
+            if (root.isAttachedToWindow()) placeBelow(root);
+            else root.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+                @Override
+                public void onViewAttachedToWindow(View view) {
+                    view.removeOnAttachStateChangeListener(this);
+                    placeBelow(view);
+                }
+
+                @Override
+                public void onViewDetachedFromWindow(View view) {
+                }
+            });
 
             String action = pendingAction;
             if (action == null) return;
