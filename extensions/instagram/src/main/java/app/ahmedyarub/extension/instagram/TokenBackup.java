@@ -71,8 +71,12 @@ public final class TokenBackup {
                 // been signed in, the backup goes, so a sign-out stays one across a reinstall
                 // too; a restore that did not take keeps it.
                 if (firstStart(context)) {
-                    // Signed in once its authorization headers are back (see onStoreOpened).
-                    if (file.isFile() && restore(preferences, file)) appContext = context.getApplicationContext();
+                    // Signed in once its authorization headers are back (see onStoreOpened), so
+                    // the context is there before restore hands the headers over.
+                    if (file.isFile()) {
+                        appContext = context.getApplicationContext();
+                        if (!restore(preferences, file)) appContext = null;
+                    }
                 } else if (state(context).getBoolean("signedIn", false) && file.isFile() && !file.delete()) {
                     Logger.printInfo(() -> "TokenBackup could not delete " + file);
                 }
