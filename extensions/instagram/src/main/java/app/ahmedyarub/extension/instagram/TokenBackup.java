@@ -69,7 +69,8 @@ public final class TokenBackup {
                 // been signed in, the backup goes, so a sign-out stays one across a reinstall
                 // too; a restore that did not take keeps it.
                 if (firstStart(context)) {
-                    if (file.isFile()) restore(preferences, file);
+                    // A restored session is a signed-in one, should it be signed out in this run.
+                    if (file.isFile() && restore(preferences, file)) state(context).edit().putBoolean("signedIn", true).apply();
                 } else if (state(context).getBoolean("signedIn", false) && file.isFile() && !file.delete()) {
                     Logger.printInfo(() -> "TokenBackup could not delete " + file);
                 }
@@ -148,7 +149,7 @@ public final class TokenBackup {
         }
     }
 
-    private static void restore(SharedPreferences preferences, File file) {
+    private static boolean restore(SharedPreferences preferences, File file) {
         try {
             JSONObject backup = new JSONObject(new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8));
             SharedPreferences.Editor editor = preferences.edit();
@@ -175,8 +176,10 @@ public final class TokenBackup {
             editor.commit();
             pendingAuth = backup.getJSONObject("auth");
             Logger.printInfo(() -> "TokenBackup restored the signed-in session's preferences");
+            return true;
         } catch (Throwable ex) {
             Logger.printException(() -> "TokenBackup could not restore the session", ex);
+            return false;
         }
     }
 
