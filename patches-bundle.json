@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-10-30T13:08:15",
-  "description": "## [1.22.0-dev.4](https://github.com/ahmedyarub/morphe-patches/compare/v1.22.0-dev.3...v1.22.0-dev.4) (2026-10-30)\n\n### 🐛 Bug Fixes\n\n* Count a restored session as signed in ([2de79ea](https://github.com/ahmedyarub/morphe-patches/commit/2de79ea1414396b0a667c517a1ff5f733c1ffb52))\n* Drop the token backup on sign-out and run the Reels menu's own options ([ab559bc](https://github.com/ahmedyarub/morphe-patches/commit/ab559bc3ff57aa36efd822a8207efe0dc74d0c57))\n* Keep the token backup when a restore did not take ([e918d49](https://github.com/ahmedyarub/morphe-patches/commit/e918d4954795d20c2f77b16df043ad5e2b924056))",
-  "download_url": "https://github.com/ahmedyarub/morphe-patches/releases/download/v1.22.0-dev.4/patches-1.22.0-dev.4.mpp",
+  "created_at": "2026-10-30T13:19:42",
+  "description": "## [1.22.0-dev.5](https://github.com/ahmedyarub/morphe-patches/compare/v1.22.0-dev.4...v1.22.0-dev.5) (2026-10-30)\n\n### 🐛 Bug Fixes\n\n* **Instagram:** Count a restored session as signed in once its headers are back ([223ce18](https://github.com/ahmedyarub/morphe-patches/commit/223ce18d587785346e316c43d07120f1376706e2))\n* **Instagram:** Set the restore context before the headers are handed over ([52e671e](https://github.com/ahmedyarub/morphe-patches/commit/52e671e99c9d4f86d676a491b1b0c4911af8c708))",
+  "download_url": "https://github.com/ahmedyarub/morphe-patches/releases/download/v1.22.0-dev.5/patches-1.22.0-dev.5.mpp",
   "signature_download_url": "",
-  "version": "1.22.0-dev.4"
+  "version": "1.22.0-dev.5"
 }

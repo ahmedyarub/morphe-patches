@@ -1,3 +1,10 @@
+## [1.22.0-dev.5](https://github.com/ahmedyarub/morphe-patches/compare/v1.22.0-dev.4...v1.22.0-dev.5) (2026-10-30)
+
+### 🐛 Bug Fixes
+
+* **Instagram:** Count a restored session as signed in once its headers are back ([223ce18](https://github.com/ahmedyarub/morphe-patches/commit/223ce18d587785346e316c43d07120f1376706e2))
+* **Instagram:** Set the restore context before the headers are handed over ([52e671e](https://github.com/ahmedyarub/morphe-patches/commit/52e671e99c9d4f86d676a491b1b0c4911af8c708))
+
 ## [1.22.0-dev.4](https://github.com/ahmedyarub/morphe-patches/compare/v1.22.0-dev.3...v1.22.0-dev.4) (2026-10-30)
 
 ### 🐛 Bug Fixes
