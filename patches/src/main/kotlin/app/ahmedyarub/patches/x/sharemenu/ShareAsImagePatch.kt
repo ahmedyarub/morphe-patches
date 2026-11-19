@@ -57,14 +57,29 @@ val shareAsImagePatch = bytecodePatch(
         ShareImageSetting("entryClass").method.returnEarly(entry.type.removePrefix("L").removeSuffix(";").replace('/', '.'))
         ShareImageSetting("shareMethodClass").method.returnEarly(shareMethod.removePrefix("L").removeSuffix(";").replace('/', '.'))
 
-        // The sheet's state is made with its subject seventh and its apps ninth.
-        mutableClassDefBy(ShareSheetStateToStringFingerprint.classDef).methods.single { method ->
-            method.name == "<init>" && method.parameterTypes.size >= 9 && method.parameterTypes[8] == "Ljava/util/List;"
-        }.addInstructions(
+        // The sheet's state is made with its subject (a type of the sheet's own package), then a
+        // String, then its apps. The subject was seventh up to 12.43; 12.44 added a Boolean before it.
+        val sheetState = ShareSheetStateToStringFingerprint.classDef
+        val sheetPackage = sheetState.type.substringBeforeLast('/') + "/"
+        var subjectIndex = -1
+        val sheetInit = mutableClassDefBy(sheetState).methods.single { method ->
+            if (method.name != "<init>") return@single false
+            val types = method.parameterTypes.map { it.toString() }
+            subjectIndex = (0 until types.size - 2).firstOrNull { i ->
+                types[i].startsWith(sheetPackage) && types[i + 1] == "Ljava/lang/String;" && types[i + 2] == "Ljava/util/List;"
+            } ?: -1
+            subjectIndex >= 0
+        }
+        val registerOf = { index: Int ->
+            1 + sheetInit.parameterTypes.take(index).sumOf { if (it.toString() == "J" || it.toString() == "D") 2 else 1 }
+        }
+        val subject = registerOf(subjectIndex)
+        val apps = registerOf(subjectIndex + 2)
+        sheetInit.addInstructions(
             0,
             """
-            invoke-static { p7, p9 }, $SHARE_IMAGE_CLASS->apps(Ljava/lang/Object;Ljava/util/List;)Ljava/util/List;
-            move-result-object p9
+            invoke-static { p$subject, p$apps }, $SHARE_IMAGE_CLASS->apps(Ljava/lang/Object;Ljava/util/List;)Ljava/util/List;
+            move-result-object p$apps
             """,
         )
 
