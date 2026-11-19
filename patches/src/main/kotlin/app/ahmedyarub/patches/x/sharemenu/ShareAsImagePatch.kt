@@ -61,15 +61,18 @@ val shareAsImagePatch = bytecodePatch(
         // String, then its apps. The subject was seventh up to 12.43; 12.44 added a Boolean before it.
         val sheetState = ShareSheetStateToStringFingerprint.classDef
         val sheetPackage = sheetState.type.substringBeforeLast('/') + "/"
-        var subjectIndex = -1
-        val sheetInit = mutableClassDefBy(sheetState).methods.single { method ->
-            if (method.name != "<init>") return@single false
-            val types = method.parameterTypes.map { it.toString() }
-            subjectIndex = (0 until types.size - 2).firstOrNull { i ->
+        // The index is computed from the constructor single() picked: single() runs its predicate on
+        // every method, so a value kept from inside it would come from whichever <init> came last.
+        fun subjectIndexOf(parameterTypes: List<CharSequence>): Int? {
+            val types = parameterTypes.map { it.toString() }
+            return (0 until types.size - 2).firstOrNull { i ->
                 types[i].startsWith(sheetPackage) && types[i + 1] == "Ljava/lang/String;" && types[i + 2] == "Ljava/util/List;"
-            } ?: -1
-            subjectIndex >= 0
+            }
         }
+        val sheetInit = mutableClassDefBy(sheetState).methods.single { method ->
+            method.name == "<init>" && subjectIndexOf(method.parameterTypes) != null
+        }
+        val subjectIndex = subjectIndexOf(sheetInit.parameterTypes)!!
         val registerOf = { index: Int ->
             1 + sheetInit.parameterTypes.take(index).sumOf { if (it.toString() == "J" || it.toString() == "D") 2 else 1 }
         }
