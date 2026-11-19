@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-11-19T10:29:26",
-  "description": "## [1.25.0](https://github.com/ahmedyarub/morphe-patches/compare/v1.24.2...v1.25.0) (2026-11-19)\n\n### 🐛 Bug Fixes\n\n* **Instagram:** Keep the Reels buttons on the reel on screen ([db087b5](https://github.com/ahmedyarub/morphe-patches/commit/db087b5e65c780dddd005b2c20feebe2cd5ab175))\n* **X:** Keep Undo Posts on the shared X versions ([30dda60](https://github.com/ahmedyarub/morphe-patches/commit/30dda60307d5ee3c9209831fff73e1cb92b4f701))\n\n### ✨ New Features\n\n* **Instagram:** Support 456.0.0.53.78 ([60f274d](https://github.com/ahmedyarub/morphe-patches/commit/60f274d227f5b12b5db4485aea98f49533b722cf))\n* **Instagram:** Support 456.1.0.56.78 ([5b13db0](https://github.com/ahmedyarub/morphe-patches/commit/5b13db03a0730b062cfed7bbccdfec37ec135834))\n* **X:** Support 12.44.0 ([97f6612](https://github.com/ahmedyarub/morphe-patches/commit/97f66126768181e1b7a7fd34bc7129af894dffc2))",
-  "download_url": "https://github.com/ahmedyarub/morphe-patches/releases/download/v1.25.0/patches-1.25.0.mpp",
+  "created_at": "2026-11-19T10:37:00",
+  "description": "## [1.25.1-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.25.0...v1.25.1-dev.1) (2026-11-19)\n\n### 🐛 Bug Fixes\n\n* **X:** Take the share sheet's subject index from the constructor picked ([c470840](https://github.com/ahmedyarub/morphe-patches/commit/c47084002391159c5749ddc2ce02b13efb4208d1))",
+  "download_url": "https://github.com/ahmedyarub/morphe-patches/releases/download/v1.25.1-dev.1/patches-1.25.1-dev.1.mpp",
   "signature_download_url": "",
-  "version": "1.25.0"
+  "version": "1.25.1-dev.1"
 }
