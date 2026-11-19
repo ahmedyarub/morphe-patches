@@ -1,3 +1,9 @@
+## [1.25.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.25.0...v1.25.1) (2026-11-19)
+
+### 🐛 Bug Fixes
+
+* **X:** Take the share sheet's subject index from the constructor picked ([c470840](https://github.com/ahmedyarub/morphe-patches/commit/c47084002391159c5749ddc2ce02b13efb4208d1))
+
 ## [1.25.1-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.25.0...v1.25.1-dev.1) (2026-11-19)
 
 ### 🐛 Bug Fixes
