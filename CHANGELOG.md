@@ -1,3 +1,14 @@
+## [1.25.0-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.24.2...v1.25.0-dev.1) (2026-11-19)
+
+### 🐛 Bug Fixes
+
+* **Instagram:** Keep the Reels buttons on the reel on screen ([db087b5](https://github.com/ahmedyarub/morphe-patches/commit/db087b5e65c780dddd005b2c20feebe2cd5ab175))
+
+### ✨ New Features
+
+* **Instagram:** Support 456.0.0.53.78 ([60f274d](https://github.com/ahmedyarub/morphe-patches/commit/60f274d227f5b12b5db4485aea98f49533b722cf))
+* **Instagram:** Support 456.1.0.56.78 ([5b13db0](https://github.com/ahmedyarub/morphe-patches/commit/5b13db03a0730b062cfed7bbccdfec37ec135834))
+
 ## [1.24.2](https://github.com/ahmedyarub/morphe-patches/compare/v1.24.1...v1.24.2) (2026-11-13)
 
 ### 🐛 Bug Fixes
