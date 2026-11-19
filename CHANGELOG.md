@@ -1,3 +1,13 @@
+## [1.25.0-dev.2](https://github.com/ahmedyarub/morphe-patches/compare/v1.25.0-dev.1...v1.25.0-dev.2) (2026-11-19)
+
+### 🐛 Bug Fixes
+
+* **X:** Keep Undo Posts on the shared X versions ([30dda60](https://github.com/ahmedyarub/morphe-patches/commit/30dda60307d5ee3c9209831fff73e1cb92b4f701))
+
+### ✨ New Features
+
+* **X:** Support 12.44.0 ([97f6612](https://github.com/ahmedyarub/morphe-patches/commit/97f66126768181e1b7a7fd34bc7129af894dffc2))
+
 ## [1.25.0-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.24.2...v1.25.0-dev.1) (2026-11-19)
 
 ### 🐛 Bug Fixes
