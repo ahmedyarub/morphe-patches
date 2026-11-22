@@ -1,3 +1,13 @@
+## [1.26.0-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.25.1...v1.26.0-dev.1) (2026-11-22)
+
+### 🐛 Bug Fixes
+
+* **X:** Pass the follow button's 12.45 arguments ([c52fec2](https://github.com/ahmedyarub/morphe-patches/commit/c52fec2fdfd9aa25965b014fd0a4b78912dad01d))
+
+### ✨ New Features
+
+* **X:** Support 12.45.1 ([0575591](https://github.com/ahmedyarub/morphe-patches/commit/05755916790722c40dec7ab162b5f7e032703415))
+
 ## [1.25.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.25.0...v1.25.1) (2026-11-19)
 
 ### 🐛 Bug Fixes
