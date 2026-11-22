@@ -1,5 +1,6 @@
 package app.ahmedyarub.patches.claude.internal
 
+import app.ahmedyarub.patches.claude.shared.forceEmployeeResult
 import app.ahmedyarub.patches.shared.Constants.COMPATIBILITY_CLAUDE
 import app.morphe.patcher.Fingerprint
 import app.morphe.patcher.extensions.InstructionExtensions.getInstruction
@@ -7,9 +8,6 @@ import app.morphe.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.morphe.patcher.patch.BytecodePatchContext
 import app.morphe.patcher.patch.bytecodePatch
 import com.android.tools.smali.dexlib2.Opcode
-import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
-
-private const val MAX_CONST_4_REGISTER = 15
 
 /**
  * Opens an `account != null && wz.a.a()` gate matched by [gate]: the employee check's result is set to 1
@@ -17,14 +15,7 @@ private const val MAX_CONST_4_REGISTER = 15
  * (the row's onClick is passed in and the internal screen is self-contained).
  */
 context(_: BytecodePatchContext)
-private fun openEmployeeGate(gate: Fingerprint) = gate.method.apply {
-    val moveResultIndex = gate.instructionMatches[1].index
-    val register = getInstruction<OneRegisterInstruction>(moveResultIndex).registerA
-    replaceInstruction(
-        moveResultIndex,
-        if (register <= MAX_CONST_4_REGISTER) "const/4 v$register, 0x1" else "const/16 v$register, 0x1"
-    )
-
+private fun openEmployeeGate(gate: Fingerprint) = gate.forceEmployeeResult(matchIndex = 1).apply {
     val callIndex = gate.instructionMatches[0].index
     val nullCheckIndex = (callIndex - 1 downTo 0).first { getInstruction(it).opcode == Opcode.IF_EQZ }
     replaceInstruction(nullCheckIndex, "nop")

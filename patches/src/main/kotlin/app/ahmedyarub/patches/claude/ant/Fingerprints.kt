@@ -28,7 +28,7 @@ private object Resources {
  * boolean isAnt = ((wz.a) (kr.a) inject(kr.a.class)).a();
  * ...
  * copyConversationId = isAnt ? new m20.d(..., new ol.g0(...)) : null;   // "Copy conversation ID"
- * topBar(..., outline, isAnt, ...);   // isAnt: the outline's "(Ant only)" label, copyConversationId, ...);
+ * topBar(..., outline, isAnt /* the outline's "(Ant only)" label */, copyConversationId, ...);
  * ```
  *
  * The anchor is the "Untitled" fallback followed by the check: the injected object cast to the interface and then
