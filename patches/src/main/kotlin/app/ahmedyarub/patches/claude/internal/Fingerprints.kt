@@ -10,30 +10,25 @@ import com.android.tools.smali.dexlib2.AccessFlags
 import com.android.tools.smali.dexlib2.Opcode
 
 /**
- * The string resource "Internal settings" (res `0x7f141294` in 1.261120.19). Its name was stripped by
- * R8 resource shrinking (`APKTOOL_RENAMED_0x7f141294`), so it can only be matched by id, which changes
- * every release — hence a new value each time the version is bumped. This is the row the live Settings
- * screen shows; two unrelated hardcoded `"Internal Settings"` string literals belong to an alternate
- * settings surface the app does not render (`au.l4`) and to the internal screen's own header (`p3.x`).
+ * String resources whose names R8 resource shrinking stripped (`APKTOOL_RENAMED_0x…`), so they can only be
+ * matched by id. Ids change every release: update them each time the Claude version is bumped.
  */
-private const val INTERNAL_SETTINGS_STRING = 0x7f141294
+private object Resources {
+    /** "Internal settings": the row (1.261120.19). */
+    const val INTERNAL_SETTINGS_ROW = 0x7f141294
+
+    /** The header of the Settings section that holds the row (1.261120.19). */
+    const val INTERNAL_SETTINGS_SECTION = 0x7f141c20
+}
 
 /**
- * The "Internal settings" row of the Settings screen, a case of an R8-merged `invoke(Object, Object,
- * Object)` lambda (`a30.s` in 1.261120.19):
- *
- * ```
- * if (b1Var.f15744e != null && ((wz.a) b1Var.f15745f).a()) {   // non-null account AND Anthropic employee
- *     settingsRow(..., getString(R.string.internal_settings), onClick, ...)
- * }
- * ```
- *
- * `wz.a.a()` returns the `is_ant` preference that sign-in stores for `@anthropic.com` accounts. The
- * anchor is that boolean check — a no-argument `()Z` call, its `move-result` and the `if-eqz` that
- * skips the row — immediately followed (within the row's setup) by the Internal-settings string
- * resource, which pins the match to this row rather than to the dormant `au.l4` copy of the same shape.
+ * Both gates of the "Internal settings" entry are an R8-merged `invoke(Object, Object, Object)` Compose
+ * lambda testing `account != null && wz.a.a()`: a non-null internal-org object (`b20.b1.e`, type `ap.j4`)
+ * and the `is_ant` (Anthropic employee) preference. The anchor is the employee check — a no-argument `()Z`
+ * call, its `move-result` and the `if-eqz` that skips the content — followed within the content's setup by
+ * the content's string resource, which tells the two gates apart (and from look-alikes elsewhere).
  */
-internal object InternalSettingsRowFingerprint : Fingerprint(
+private fun employeeGateFingerprint(stringResource: Int) = Fingerprint(
     name = "invoke",
     accessFlags = listOf(AccessFlags.PUBLIC, AccessFlags.FINAL),
     returnType = "Ljava/lang/Object;",
@@ -42,6 +37,19 @@ internal object InternalSettingsRowFingerprint : Fingerprint(
         methodCall(parameters = listOf(), returnType = "Z", opcode = Opcode.INVOKE_VIRTUAL),
         opcode(Opcode.MOVE_RESULT, MatchAfterImmediately()),
         opcode(Opcode.IF_EQZ, MatchAfterImmediately()),
-        literal(INTERNAL_SETTINGS_STRING, location = MatchAfterWithin(20))
+        literal(stringResource, location = MatchAfterWithin(20))
     )
 )
+
+/**
+ * The outer gate (`b20.e1` case 0 in 1.261120.19): the Settings screen renders the section holding the row
+ * only when `b1.p || (account != null && wz.a.a())`.
+ */
+internal val internalSettingsSectionFingerprint = employeeGateFingerprint(Resources.INTERNAL_SETTINGS_SECTION)
+
+/**
+ * The inner gate (`a30.s` case 4 in 1.261120.19): inside that section, the "Internal settings" row itself.
+ * This is the live row; a hardcoded `"Internal Settings"` literal belongs to a dormant copy of the same shape
+ * (`au.l4`) that the app does not render, and another to the internal screen's own header (`p3.x`).
+ */
+internal val internalSettingsRowFingerprint = employeeGateFingerprint(Resources.INTERNAL_SETTINGS_ROW)
