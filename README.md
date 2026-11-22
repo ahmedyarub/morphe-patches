@@ -15,7 +15,7 @@ Click here to add these patches to Morphe: https://morphe.software/add-source?gi
 ## 🩹 Patches list
 
 <!-- PATCHES_START EXPANDED -->
-> **[v1.26.0-dev.1](https://github.com/ahmedyarub/morphe-patches/releases/tag/v1.26.0-dev.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;66 patches total
+> **[v1.26.0-dev.2](https://github.com/ahmedyarub/morphe-patches/releases/tag/v1.26.0-dev.2)**&nbsp;&nbsp;•&nbsp;&nbsp;`dev`&nbsp;&nbsp;•&nbsp;&nbsp;68 patches total
 <details open>
 <summary>📦 X&nbsp;&nbsp;•&nbsp;&nbsp;44 patches</summary>
 <br>
@@ -121,6 +121,22 @@ Click here to add these patches to Morphe: https://morphe.software/add-source?gi
 |----------|----------------|-----------|
 | [Remove Reddit Pro section](#remove-reddit-pro-section) | Removes the Reddit Pro section from the community drawer, and the Reddit Pro promos: the post creation and subreddit join upsell sheets, and the Reddit Pro banner on the profile feed. |  |
 | [Remove Resources and Games on Reddit sections](#remove-resources-and-games-on-reddit-sections) | Removes the Resources and Games on Reddit sections from the community drawer. |  |
+
+</details>
+
+<details open>
+<summary>📦 Claude&nbsp;&nbsp;•&nbsp;&nbsp;2 patches</summary>
+<br>
+
+**🎯 Supported versions:**
+
+| 1.261120.19 |
+| :---: |
+
+| 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
+|----------|----------------|-----------|
+| [Show employee-only items](#show-employee-only-items) | Shows menu items the app keeps for Anthropic accounts that only work on your own data: Copy conversation ID in a chat's menu, and Copy session ID and Debug (session ID, app version and build, to copy or share) in the menu of a Claude Code session that runs in the cloud. Items that send anything to Anthropic (feedback, problem reports) stay hidden, and the app still treats you as a regular account everywhere else. |  |
+| [Show internal settings](#show-internal-settings) | Shows the Settings screen's "Internal settings" entry, normally only for Anthropic accounts: GrowthBook feature flag overrides, endpoint selection, network and usage simulation. |  |
 
 </details>
 
