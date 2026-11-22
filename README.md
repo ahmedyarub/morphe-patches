@@ -147,7 +147,7 @@ The patches only mean something against the app builds they target, so the main 
 them to real APKs, which are not in the repository:
 
 ```sh
-./gradlew :patches:apkTest -Pmorphe.apks=instagram=<base.apk or .apkm>,reddit=<base.apk or .apkm>
+./gradlew :patches:apkTest -Pmorphe.apks=instagram=<base.apk or .apkm>,reddit=<base.apk or .apkm>,claude=<base.apk>
 ```
 
 This applies every patch for each app and fails when a patch throws, when a fingerprint
