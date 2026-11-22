@@ -1,6 +1,6 @@
 {
   "NOTE": "Do NOT manually edit this file. This file is automatically updated when semantic release (release.yml) runs. Manually editing this file can break your releases and break third party tools that use this file.",
-  "version": "1.26.0",
+  "version": "1.26.0-dev.2",
   "patches": [
     {
       "name": "Add ability to copy media link",
@@ -6458,6 +6458,60 @@
               "versionCodes": null,
               "isExperimental": false,
               "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Show employee-only items",
+      "description": "Shows menu items the app keeps for Anthropic accounts that only work on your own data: Copy conversation ID in a chat's menu, and Copy session ID and Debug (session ID, app version and build, to copy or share) in the menu of a Claude Code session that runs in the cloud. Items that send anything to Anthropic (feedback, problem reports) stay hidden, and the app still treats you as a regular account everywhere else.",
+      "default": false,
+      "category": null,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.anthropic.claude",
+          "name": "Claude",
+          "description": null,
+          "apkFileType": "APKS",
+          "appIconColor": "#D97757",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "1.261120.19",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": 32,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Show internal settings",
+      "description": "Shows the Settings screen's \"Internal settings\" entry, normally only for Anthropic accounts: GrowthBook feature flag overrides, endpoint selection, network and usage simulation.",
+      "default": false,
+      "category": null,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.anthropic.claude",
+          "name": "Claude",
+          "description": null,
+          "apkFileType": "APKS",
+          "appIconColor": "#D97757",
+          "signatures": null,
+          "targets": [
+            {
+              "version": "1.261120.19",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": 32,
               "description": null
             }
           ]
