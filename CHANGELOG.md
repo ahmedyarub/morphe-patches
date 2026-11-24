@@ -1,3 +1,9 @@
+## [1.29.0-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.28.0...v1.29.0-dev.1) (2026-11-24)
+
+### ✨ New Features
+
+* **X:** Support 12.46.1 ([91ffc17](https://github.com/ahmedyarub/morphe-patches/commit/91ffc17d3c2a07104e719b8c707d505f3ccfe78e))
+
 ## [1.28.0](https://github.com/ahmedyarub/morphe-patches/compare/v1.27.0...v1.28.0) (2026-11-24)
 
 ### ✨ New Features
