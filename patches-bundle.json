@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-11-24T19:34:53",
-  "description": "## [1.29.0-dev.1](https://github.com/ahmedyarub/morphe-patches/compare/v1.28.0...v1.29.0-dev.1) (2026-11-24)\n\n### ✨ New Features\n\n* **X:** Support 12.46.1 ([91ffc17](https://github.com/ahmedyarub/morphe-patches/commit/91ffc17d3c2a07104e719b8c707d505f3ccfe78e))",
-  "download_url": "https://github.com/ahmedyarub/morphe-patches/releases/download/v1.29.0-dev.1/patches-1.29.0-dev.1.mpp",
+  "created_at": "2026-11-24T19:38:30",
+  "description": "## [1.29.0](https://github.com/ahmedyarub/morphe-patches/compare/v1.28.0...v1.29.0) (2026-11-24)\n\n### ✨ New Features\n\n* **X:** Support 12.46.1 ([91ffc17](https://github.com/ahmedyarub/morphe-patches/commit/91ffc17d3c2a07104e719b8c707d505f3ccfe78e))",
+  "download_url": "https://github.com/ahmedyarub/morphe-patches/releases/download/v1.29.0/patches-1.29.0.mpp",
   "signature_download_url": "",
-  "version": "1.29.0-dev.1"
+  "version": "1.29.0"
 }
